@@ -32,6 +32,16 @@ Import/export data, fetch from API, or load files directly for offline analysis.
 
 ![Data Management](demo/screenshot-data.png)
 
+### Attack Paths
+View detected security findings with severity levels, rules, and affected resources.
+
+![Attack Paths](demo/screenshot-attacks.png)
+
+### Settings
+Configure API connection, graph layout algorithm, and appearance options.
+
+![Settings](demo/screenshot-settings.png)
+
 ## Installation
 
 ```bash
