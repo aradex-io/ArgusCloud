@@ -1196,7 +1196,15 @@
           container: document.getElementById('cy'),
           elements: elements,
           style: getCyStyle(),
-          layout: { name: layout, animate: false }
+          layout: { name: layout, animate: false },
+          // Finer zoom control settings
+          wheelSensitivity: 0.15,
+          minZoom: 0.1,
+          maxZoom: 5,
+          zoomingEnabled: true,
+          userZoomingEnabled: true,
+          panningEnabled: true,
+          userPanningEnabled: true
         });
         setupCyEvents();
       } else {
@@ -1210,6 +1218,8 @@
       const isDark = !document.body.classList.contains('light');
       const textColor = isDark ? '#f1f5f9' : '#0f172a';
       const edgeColor = isDark ? '#4a5568' : '#cbd5e1';
+      // Edge label colors - lighter in dark mode, darker in light mode for better contrast
+      const edgeLabelColor = isDark ? '#e2e8f0' : '#1e293b';
 
       return [
         {
@@ -1244,9 +1254,14 @@
             'arrow-scale': 0.8,
             'curve-style': 'bezier',
             'label': 'data(label)',
-            'font-size': '8px',
-            'color': isDark ? '#94a3b8' : '#64748b',
+            'font-size': '9px',
+            'font-weight': '500',
+            'color': edgeLabelColor,
             'text-rotation': 'autorotate',
+            'text-background-color': isDark ? 'rgba(15, 20, 25, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+            'text-background-opacity': 1,
+            'text-background-padding': '2px',
+            'text-background-shape': 'roundrectangle',
             'font-family': 'Inter, sans-serif'
           }
         },
