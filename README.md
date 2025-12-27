@@ -1,15 +1,18 @@
 # CloudHound
 
-BloodHound-style graph analytics for AWS environments. Collect, normalize, and visualize AWS resources, trust relationships, and attack paths.
+BloodHound-style graph analytics for multi-cloud environments. Collect, normalize, and visualize cloud resources, trust relationships, and attack paths.
 
 ![Graph View](demo/screenshot-graph.png)
 
 ## Features
 
+- **Multi-Cloud Support**: Modular architecture for AWS (with GCP and Azure coming soon)
 - **AWS Data Collection**: Enumerate IAM, S3, EC2, Lambda, EKS, RDS, and 30+ other AWS services
 - **Graph Visualization**: Interactive graph showing trust relationships, permissions, and attack paths
 - **Attack Path Analysis**: Automated detection of privilege escalation and lateral movement opportunities
+- **Multiple Export Formats**: JSON, SARIF (for CI/CD integration), and standalone HTML reports
 - **Neo4j Integration**: Store and query data using Cypher
+- **API Authentication**: JWT and API key support for secure access
 - **Offline Support**: Export bundles for air-gapped analysis
 
 ## Screenshots
@@ -36,8 +39,13 @@ Import/export data, fetch from API, or load files directly for offline analysis.
 git clone https://github.com/jeremylaratro/cloudhound.git
 cd cloudhound
 
-# Install Python dependencies
-pip install -r requirements.txt
+# Install with pip
+pip install -e .
+
+# Or install with optional dependencies
+pip install -e ".[dev]"      # Development tools
+pip install -e ".[gcp]"      # GCP support (coming soon)
+pip install -e ".[azure]"    # Azure support (coming soon)
 
 # (Optional) Start Neo4j
 docker run -d --name neo4j \
@@ -52,39 +60,67 @@ docker run -d --name neo4j \
 
 ```bash
 # Using default AWS profile
-python -m awshound.cli collect --output ./output
+cloudhound collect --provider aws --output ./output
 
 # Using specific profile and region
-python -m awshound.cli collect --profile myprofile --region us-east-1 --output ./output
+cloudhound collect --provider aws --profile myprofile --region us-east-1 --output ./output
 
 # Collect specific services only
-python -m awshound.cli collect --services iam s3 ec2 lambda
+cloudhound collect --provider aws --services iam s3 ec2 lambda
 ```
 
 ### Normalize Data
 
 ```bash
 # Generate nodes and edges from collected data
-python -m awshound.cli normalize --output ./output
+cloudhound normalize --input ./output
 ```
 
-### Load into Neo4j
+### Analyze for Attack Paths
 
 ```bash
-python scripts/load_to_neo4j.py \
-  --nodes output/nodes.jsonl \
-  --edges output/edges.jsonl \
-  --uri bolt://localhost:7687 \
-  --user neo4j \
-  --password letmein123
+# Run security rules
+cloudhound analyze --input ./output
+
+# Filter by severity
+cloudhound analyze --input ./output --severity high
+```
+
+### Export Reports
+
+```bash
+# Export to JSON
+cloudhound export --input ./output --format json --output report.json
+
+# Export to SARIF (for GitHub/Azure DevOps)
+cloudhound export --input ./output --format sarif --output findings.sarif
+
+# Export to standalone HTML report
+cloudhound export --input ./output --format html --output report.html
+```
+
+### Import to Neo4j
+
+```bash
+cloudhound import --input ./output --neo4j-uri bolt://localhost:7687 --neo4j-user neo4j --neo4j-password letmein123
+```
+
+### Start the API Server
+
+```bash
+# Start with authentication enabled
+cloudhound serve --port 5000
+
+# Start without authentication (development only)
+cloudhound serve --port 5000 --no-auth
+
+# Generate an API key
+cloudhound keygen
 ```
 
 ### Start the UI
 
 ```bash
-# Start the API server
-PYTHONPATH=. python server/api.py --uri bolt://localhost:7687 --user neo4j --password letmein123 --port 5000
-
 # Start the UI (in another terminal)
 cd ui && python -m http.server 8001
 ```
@@ -118,19 +154,37 @@ CloudHound automatically detects potential attack paths including:
 ## Architecture
 
 ```
-awshound/
-├── auth.py        # AWS authentication handling
-├── collector.py   # Service data collection
-├── normalize.py   # Convert raw data to graph nodes/edges
-├── rules.py       # Attack path detection rules
-├── graph.py       # Graph operations
-└── cli.py         # Command-line interface
+cloudhound/
+├── core/
+│   ├── graph.py       # Core data structures (Node, Edge, AttackPath)
+│   ├── registry.py    # Plugin registries for collectors/normalizers/rules
+│   └── base.py        # Base classes and utilities
+├── collectors/
+│   ├── aws/           # AWS service collectors (IAM, S3, EC2, etc.)
+│   ├── gcp/           # GCP collectors (coming soon)
+│   └── azure/         # Azure collectors (coming soon)
+├── normalizers/
+│   └── aws/           # AWS data normalizers
+├── rules/
+│   └── aws/           # AWS security rules (IAM, S3, EC2, etc.)
+├── exporters/
+│   ├── json_export.py # JSON report format
+│   ├── sarif.py       # SARIF format for CI/CD
+│   └── html.py        # Standalone HTML reports
+├── api/
+│   ├── server.py      # Flask REST API
+│   └── auth.py        # JWT/API key authentication
+└── cli/
+    └── main.py        # Unified CLI interface
 
-server/
-└── api.py         # REST API for UI
+awshound/                # Legacy AWS-specific module
+├── auth.py            # AWS authentication handling
+├── collector.py       # Service data collection
+├── normalize.py       # Convert raw data to graph nodes/edges
+└── rules.py           # Attack path detection rules
 
 ui/
-└── index.html     # Web-based graph viewer
+└── index.html         # Web-based graph viewer
 ```
 
 ## Requirements
