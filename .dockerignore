@@ -1,0 +1,144 @@
+# CloudHound Docker Build Ignore File
+# Excludes files not needed in the Docker build context
+
+# =============================================================================
+# Git
+# =============================================================================
+.git
+.gitignore
+.gitattributes
+
+# =============================================================================
+# IDE and Editor Files
+# =============================================================================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.sublime-*
+
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# =============================================================================
+# Node.js (for any frontend tooling)
+# =============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
+package-lock.json
+
+# =============================================================================
+# Documentation
+# =============================================================================
+docs/
+*.md
+!README.md
+LICENSE
+
+# =============================================================================
+# Docker
+# =============================================================================
+Dockerfile*
+docker-compose*.yml
+.docker/
+.dockerignore
+
+# =============================================================================
+# CI/CD
+# =============================================================================
+.github/
+.gitlab-ci.yml
+.circleci/
+.travis.yml
+Jenkinsfile
+azure-pipelines.yml
+
+# =============================================================================
+# Testing and Development Data
+# =============================================================================
+tests/
+test/
+*.test.py
+demo/
+data/
+output/
+*.jsonl
+*.zip
+
+# =============================================================================
+# Miscellaneous
+# =============================================================================
+*.log
+*.tmp
+*.temp
+*.bak
+.DS_Store
+Thumbs.db
+*.local
+
+# Specific project files not needed in build
+enum/
+policies/
+scripts/
+playwright.config.ts
+TEST_COVERAGE*.md
+CHANGELOG.md
+CONTRIBUTING.md
+SECURITY.md
+AWS_SETUP_GUIDE.md

@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-01-13
+
+### Added
+- **Docker Deployment**: Complete containerization infrastructure
+  - Backend API Dockerfile with multi-stage build
+  - Frontend UI Dockerfile with Nginx
+  - Development docker-compose.yml configuration
+  - Production docker-compose.prod.yml with health checks
+  - Environment configuration template (.env.example)
+  - WSGI production server configuration
+- **Test Suite Expansion**: 187 new tests across 6 test modules
+  - tests/conftest.py - Shared pytest fixtures and utilities
+  - tests/test_repositories.py - 24 repository layer tests
+  - tests/test_api_collect.py - 24 collection endpoint tests
+  - tests/test_collectors_session.py - 32 session management tests
+  - tests/test_api_errors.py - 30 error handling tests
+  - tests/test_config.py - 34 configuration tests
+  - tests/test_plugins.py - 43 plugin system tests
+- **Documentation Archive**: Historical analysis documents moved to docs/archive/
+
+### Changed
+- **UI Documentation**: Comprehensive rewrite of ui/README.md with architecture details
+- **Security Policy**: Updated SECURITY.md with version 0.4.0 in supported versions table
+- **Contributing Guide**: Fixed repository URL in CONTRIBUTING.md
+- **Legacy Naming**: Updated remaining AWSHound references to CloudHound in docs/
+
+### Removed
+- **Historical Documents**: Archived CRITICAL_ANALYSIS.md and REMAINING_REMEDIATION_PLAN.md to docs/archive/
+
+### Fixed
+- **Documentation Consistency**: Standardized naming and references across all documentation
+- **Production Deployment**: Enhanced docker-compose.prod.yml with proper networking and volumes
+
 ## [0.3.0] - 2025-12-30
 
 ### Added

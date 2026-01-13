@@ -10,15 +10,15 @@
 - Install dependencies: `pip install -r requirements.txt` (includes `neo4j` driver).
 
 ## Loading workflow
-1) Collect data: `python -m awshound.cli collect --output awshound-output`
-2) Normalize + rules: `python -m awshound.cli normalize --output awshound-output`
+1) Collect data: `python -m cloudhound.cli collect --output cloudhound-output`
+2) Normalize + rules: `python -m cloudhound.cli normalize --output cloudhound-output`
 3) Load into Neo4j (Python snippet):
 ```python
-from awshound.storage import load_jsonl_nodes, load_jsonl_edges, Neo4jLoader
+from cloudhound.storage import load_jsonl_nodes, load_jsonl_edges, Neo4jLoader
 from pathlib import Path
 
-nodes = load_jsonl_nodes(Path("awshound-output/nodes.jsonl"))
-edges = load_jsonl_edges(Path("awshound-output/edges.jsonl"))
+nodes = load_jsonl_nodes(Path("cloudhound-output/nodes.jsonl"))
+edges = load_jsonl_edges(Path("cloudhound-output/edges.jsonl"))
 loader = Neo4jLoader(uri="bolt://localhost:7687", user="neo4j", password="pass", batch_size=1000)
 loader.load(nodes, edges)
 ```

@@ -23,7 +23,7 @@ Thank you for your interest in contributing to CloudHound! This document provide
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/owner/cloudhound.git
+   git clone https://github.com/jeremylaratro/cloudhound.git
    cd cloudhound
    ```
 
@@ -294,7 +294,7 @@ See [SECURITY.md](SECURITY.md) for reporting instructions.
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/owner/cloudhound/discussions) for questions
+- Open a [Discussion](https://github.com/jeremylaratro/cloudhound/discussions) for questions
 - Check existing issues before creating new ones
 - Join our community chat (if available)
 

@@ -1,0 +1,125 @@
+# CloudHound Development Docker Compose
+# Usage: docker compose up
+#
+# This configuration is optimized for local development with:
+# - Volume mounts for hot reloading
+# - Debug logging enabled
+# - Authentication disabled by default
+# - Neo4j browser accessible at http://localhost:7474
+
+services:
+  # ============================================================================
+  # Neo4j Graph Database
+  # ============================================================================
+  neo4j:
+    image: neo4j:5
+    container_name: cloudhound-neo4j
+    restart: unless-stopped
+    ports:
+      - "7474:7474"   # HTTP browser interface
+      - "7687:7687"   # Bolt protocol
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-letmein123}
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+      NEO4J_dbms_security_procedures_allowlist: apoc.*
+      # Development settings - more permissive memory
+      NEO4J_dbms_memory_heap_initial__size: 256m
+      NEO4J_dbms_memory_heap_max__size: 512m
+      NEO4J_dbms_memory_pagecache_size: 256m
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - cloudhound
+
+  # ============================================================================
+  # CloudHound API Server
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cloudhound-api
+    restart: unless-stopped
+    ports:
+      - "9847:9847"
+    environment:
+      # Neo4j connection
+      CLOUDHOUND_NEO4J_URI: bolt://neo4j:7687
+      CLOUDHOUND_NEO4J_USER: ${NEO4J_USER:-neo4j}
+      CLOUDHOUND_NEO4J_PASSWORD: ${NEO4J_PASSWORD:-letmein123}
+      # Development settings
+      CLOUDHOUND_AUTH_ENABLED: ${AUTH_ENABLED:-false}
+      CLOUDHOUND_LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
+      CLOUDHOUND_CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000}
+      # JWT settings (only needed if auth enabled)
+      CLOUDHOUND_JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
+      CLOUDHOUND_JWT_EXPIRY: ${JWT_EXPIRY:-86400}
+    volumes:
+      # Mount source code for development (enables hot reload with --reload flag)
+      - ./cloudhound:/app/cloudhound:ro
+      - ./awshound:/app/awshound:ro
+      # Data persistence
+      - api_data:/app/data
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9847/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - cloudhound
+
+  # ============================================================================
+  # CloudHound UI (Static Web Interface)
+  # ============================================================================
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: cloudhound-ui
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      # Mount UI files for development (live changes)
+      - ./ui/index.html:/usr/share/nginx/html/index.html:ro
+      - ./ui/css:/usr/share/nginx/html/css:ro
+      - ./ui/js:/usr/share/nginx/html/js:ro
+    depends_on:
+      - api
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - cloudhound
+
+# ==============================================================================
+# Volumes
+# ==============================================================================
+volumes:
+  neo4j_data:
+    driver: local
+  neo4j_logs:
+    driver: local
+  api_data:
+    driver: local
+
+# ==============================================================================
+# Networks
+# ==============================================================================
+networks:
+  cloudhound:
+    driver: bridge

@@ -1,4 +1,4 @@
-# Production Hardening Plan (AWSHound)
+# Production Hardening Plan (CloudHound)
 
 ## Goals
 - Reliable, large-scale collection across orgs (100+ accounts) with throttling, retries, and resumability.
