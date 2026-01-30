@@ -10,12 +10,12 @@
 
 ## Reporting a Vulnerability
 
-**Please DO NOT open public GitHub issues for security vulnerabilities.**
+**Please open a GitHub issue for security vulnerabilities.**
 
 ### How to Report
 
-1. **Email:** Send details to the project maintainers privately
-2. **Include:**
+
+**Include:**
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact
