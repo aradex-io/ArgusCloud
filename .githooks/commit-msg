@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# .githooks/commit-msg — reject AI-attribution boilerplate in commit messages.
+#
+# Activate with: git config core.hooksPath .githooks
+
+set -eu
+
+msg_file="${1:?missing commit message file}"
+
+# Patterns to reject (one per line, BRE).
+patterns=(
+    '^https://claude\.ai/code/session_'
+    '^Generated with .*Claude Code'
+    '^Co-Authored-By: Claude'
+    'https://claude\.com/claude-code'
+)
+
+found=0
+for pat in "${patterns[@]}"; do
+    if grep -E -q "$pat" "$msg_file"; then
+        echo "commit-msg: rejected — message contains banned pattern: $pat" >&2
+        found=1
+    fi
+done
+
+if [ "$found" -ne 0 ]; then
+    echo "" >&2
+    echo "Edit your commit message to remove AI-tool attribution before retrying." >&2
+    echo "See CLAUDE.md for the project commit-message policy." >&2
+    exit 1
+fi
+
+exit 0

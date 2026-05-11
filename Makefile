@@ -1,8 +1,10 @@
 .PHONY: install lint format typecheck test test-cov serve clean
 
-# Install the package with dev extras
+# Install the package with dev extras and activate the commit-msg hook
 install:
 	pip install -e ".[dev]"
+	git config core.hooksPath .githooks
+	@echo "Git hooks activated (core.hooksPath=.githooks). See CLAUDE.md for the commit-message policy."
 
 # Lint with ruff
 lint:
