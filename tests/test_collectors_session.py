@@ -1,4 +1,4 @@
-"""Tests for arguscloud.collectors.session module.
+"""Tests for cloudgraph.collectors.session module.
 
 This module tests AWS credential handling, validation, and
 session creation functionality.
@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from botocore.exceptions import ClientError, NoCredentialsError
 
-from arguscloud.collectors.session import (
+from cloudgraph.collectors.session import (
     AWSCredentials,
     CallerIdentity,
     create_session,
@@ -236,7 +236,7 @@ class TestCreateSession:
             secret_key=valid_aws_credentials["secret_key"]
         )
 
-        with patch("arguscloud.collectors.session.boto3.Session") as mock_session:
+        with patch("cloudgraph.collectors.session.boto3.Session") as mock_session:
             create_session(creds)
 
             mock_session.assert_called_once_with(
@@ -252,7 +252,7 @@ class TestCreateSession:
             session_token=valid_sts_credentials["session_token"]
         )
 
-        with patch("arguscloud.collectors.session.boto3.Session") as mock_session:
+        with patch("cloudgraph.collectors.session.boto3.Session") as mock_session:
             create_session(creds)
 
             call_kwargs = mock_session.call_args[1]
@@ -267,7 +267,7 @@ class TestCreateSession:
             region="eu-west-1"
         )
 
-        with patch("arguscloud.collectors.session.boto3.Session") as mock_session:
+        with patch("cloudgraph.collectors.session.boto3.Session") as mock_session:
             create_session(creds)
 
             call_kwargs = mock_session.call_args[1]
@@ -284,7 +284,7 @@ class TestValidateCredentials:
             secret_key=valid_aws_credentials["secret_key"]
         )
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_sts_client
             mock_create.return_value = mock_session
@@ -309,7 +309,7 @@ class TestValidateCredentials:
             "Arn": "arn:aws-us-gov:iam::123456789012:user/testuser"
         }
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_sts
             mock_create.return_value = mock_session
@@ -331,7 +331,7 @@ class TestValidateCredentials:
             "GetCallerIdentity"
         )
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_sts
             mock_create.return_value = mock_session
@@ -352,7 +352,7 @@ class TestValidateCredentials:
             "GetCallerIdentity"
         )
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_sts
             mock_create.return_value = mock_session
@@ -374,7 +374,7 @@ class TestValidateCredentials:
             "GetCallerIdentity"
         )
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_sts
             mock_create.return_value = mock_session
@@ -395,7 +395,7 @@ class TestValidateCredentials:
             "GetCallerIdentity"
         )
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_sts
             mock_create.return_value = mock_session
@@ -413,7 +413,7 @@ class TestValidateCredentials:
         mock_sts = MagicMock()
         mock_sts.get_caller_identity.side_effect = NoCredentialsError()
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_sts
             mock_create.return_value = mock_session
@@ -441,7 +441,7 @@ class TestGetAvailableRegions:
             ]
         }
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_ec2
             mock_create.return_value = mock_session
@@ -462,7 +462,7 @@ class TestGetAvailableRegions:
         mock_ec2 = MagicMock()
         mock_ec2.describe_regions.side_effect = Exception("API error")
 
-        with patch("arguscloud.collectors.session.create_session") as mock_create:
+        with patch("cloudgraph.collectors.session.create_session") as mock_create:
             mock_session = MagicMock()
             mock_session.client.return_value = mock_ec2
             mock_create.return_value = mock_session

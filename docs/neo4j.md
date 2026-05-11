@@ -10,15 +10,15 @@
 - Install dependencies: `pip install -r requirements.txt` (includes `neo4j` driver).
 
 ## Loading workflow
-1) Collect data: `python -m arguscloud.cli collect --output arguscloud-output`
-2) Normalize + rules: `python -m arguscloud.cli normalize --output arguscloud-output`
+1) Collect data: `python -m cloudgraph.cli collect --output cloudgraph-output`
+2) Normalize + rules: `python -m cloudgraph.cli normalize --output cloudgraph-output`
 3) Load into Neo4j (Python snippet):
 ```python
-from arguscloud.storage import load_jsonl_nodes, load_jsonl_edges, Neo4jLoader
+from cloudgraph.storage import load_jsonl_nodes, load_jsonl_edges, Neo4jLoader
 from pathlib import Path
 
-nodes = load_jsonl_nodes(Path("arguscloud-output/nodes.jsonl"))
-edges = load_jsonl_edges(Path("arguscloud-output/edges.jsonl"))
+nodes = load_jsonl_nodes(Path("cloudgraph-output/nodes.jsonl"))
+edges = load_jsonl_edges(Path("cloudgraph-output/edges.jsonl"))
 loader = Neo4jLoader(uri="bolt://localhost:7687", user="neo4j", password="pass", batch_size=1000)
 loader.load(nodes, edges)
 ```

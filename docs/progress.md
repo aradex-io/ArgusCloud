@@ -1,4 +1,4 @@
-# ArgusCloud Progress Tracker
+# CloudGraph Progress Tracker
 
 | Step | Description | Status | Notes |
 | --- | --- | --- | --- |

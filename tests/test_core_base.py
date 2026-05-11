@@ -1,7 +1,7 @@
-"""Tests for arguscloud.core.base module."""
+"""Tests for cloudgraph.core.base module."""
 
 import pytest
-from arguscloud.core.graph import (
+from cloudgraph.core.graph import (
     Node,
     Edge,
     AttackPath,
@@ -9,7 +9,7 @@ from arguscloud.core.graph import (
     Severity,
     CloudProvider,
 )
-from arguscloud.core.base import (
+from cloudgraph.core.base import (
     CollectorResult,
     BaseCollector,
     BaseNormalizer,

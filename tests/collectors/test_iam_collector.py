@@ -67,7 +67,7 @@ class TestIAMRoleCollection:
     @mock_aws
     def test_collect_roles_empty(self, aws_credentials):
         """Test collecting roles when none exist."""
-        from arguscloud.collectors.aws.utils import paginate_collect
+        from cloudgraph.collectors.aws.utils import paginate_collect
 
         client = boto3.client("iam", region_name="us-east-1")
         roles = paginate_collect(client, "list_roles", "Roles")
@@ -78,7 +78,7 @@ class TestIAMRoleCollection:
     @mock_aws
     def test_collect_roles_with_data(self, aws_credentials):
         """Test collecting roles when they exist."""
-        from arguscloud.collectors.aws.utils import paginate_collect
+        from cloudgraph.collectors.aws.utils import paginate_collect
 
         client = boto3.client("iam", region_name="us-east-1")
 
@@ -122,7 +122,7 @@ class TestIAMRoleCollection:
     @mock_aws
     def test_collect_role_policies(self, aws_credentials):
         """Test collecting inline policies for a role."""
-        from arguscloud.collectors.aws.utils import safe_api_call
+        from cloudgraph.collectors.aws.utils import safe_api_call
 
         client = boto3.client("iam", region_name="us-east-1")
 
@@ -166,7 +166,7 @@ class TestIAMRoleCollection:
     @mock_aws
     def test_collect_attached_policies(self, aws_credentials):
         """Test collecting attached managed policies."""
-        from arguscloud.collectors.aws.utils import paginate_collect
+        from cloudgraph.collectors.aws.utils import paginate_collect
 
         client = boto3.client("iam", region_name="us-east-1")
 
@@ -207,7 +207,7 @@ class TestIAMUserCollection:
     @mock_aws
     def test_collect_users(self, aws_credentials):
         """Test collecting IAM users."""
-        from arguscloud.collectors.aws.utils import paginate_collect
+        from cloudgraph.collectors.aws.utils import paginate_collect
 
         client = boto3.client("iam", region_name="us-east-1")
 
@@ -224,7 +224,7 @@ class TestIAMUserCollection:
     @mock_aws
     def test_collect_user_groups(self, aws_credentials):
         """Test collecting groups for a user."""
-        from arguscloud.collectors.aws.utils import paginate_collect
+        from cloudgraph.collectors.aws.utils import paginate_collect
 
         client = boto3.client("iam", region_name="us-east-1")
 
@@ -246,7 +246,7 @@ class TestIAMUserCollection:
     @mock_aws
     def test_collect_user_access_keys(self, aws_credentials):
         """Test collecting access keys for a user."""
-        from arguscloud.collectors.aws.utils import paginate_collect
+        from cloudgraph.collectors.aws.utils import paginate_collect
 
         client = boto3.client("iam", region_name="us-east-1")
 
@@ -270,7 +270,7 @@ class TestIAMPolicyCollection:
     @mock_aws
     def test_collect_customer_policies(self, aws_credentials):
         """Test collecting customer managed policies."""
-        from arguscloud.collectors.aws.utils import paginate_collect
+        from cloudgraph.collectors.aws.utils import paginate_collect
 
         client = boto3.client("iam", region_name="us-east-1")
 
@@ -300,7 +300,7 @@ class TestIAMPolicyCollection:
     @mock_aws
     def test_collect_policy_versions(self, aws_credentials):
         """Test collecting policy versions."""
-        from arguscloud.collectors.aws.utils import paginate_collect, safe_api_call
+        from cloudgraph.collectors.aws.utils import paginate_collect, safe_api_call
 
         client = boto3.client("iam", region_name="us-east-1")
 
@@ -335,7 +335,7 @@ class TestCollectorUtilities:
 
     def test_paginate_collect_handles_errors(self):
         """Test that paginate_collect handles errors gracefully."""
-        from arguscloud.collectors.aws.utils import paginate_collect
+        from cloudgraph.collectors.aws.utils import paginate_collect
 
         # Create a mock client that raises an error
         mock_client = MagicMock()
@@ -346,7 +346,7 @@ class TestCollectorUtilities:
 
     def test_safe_api_call_returns_default_on_error(self):
         """Test that safe_api_call returns default on error."""
-        from arguscloud.collectors.aws.utils import safe_api_call
+        from cloudgraph.collectors.aws.utils import safe_api_call
 
         mock_client = MagicMock()
         mock_client.some_method.side_effect = Exception("API Error")
@@ -360,7 +360,7 @@ class TestCollectorUtilities:
 
     def test_safe_api_call_extracts_result_key(self):
         """Test that safe_api_call extracts the specified key."""
-        from arguscloud.collectors.aws.utils import safe_api_call
+        from cloudgraph.collectors.aws.utils import safe_api_call
 
         mock_client = MagicMock()
         mock_client.get_data.return_value = {
@@ -377,7 +377,7 @@ class TestCollectorUtilities:
 
     def test_batch_process(self):
         """Test batch processing utility."""
-        from arguscloud.collectors.aws.utils import batch_process
+        from cloudgraph.collectors.aws.utils import batch_process
 
         items = list(range(25))
 
@@ -392,7 +392,7 @@ class TestCollectorUtilities:
 
     def test_extract_arn_account_id(self):
         """Test ARN account ID extraction."""
-        from arguscloud.collectors.aws.utils import extract_arn_account_id
+        from cloudgraph.collectors.aws.utils import extract_arn_account_id
 
         arn = "arn:aws:iam::123456789012:role/MyRole"
         assert extract_arn_account_id(arn) == "123456789012"
@@ -406,7 +406,7 @@ class TestCollectorUtilities:
 
     def test_extract_arn_region(self):
         """Test ARN region extraction."""
-        from arguscloud.collectors.aws.utils import extract_arn_region
+        from cloudgraph.collectors.aws.utils import extract_arn_region
 
         arn = "arn:aws:ec2:us-east-1:123456789012:instance/i-12345"
         assert extract_arn_region(arn) == "us-east-1"
@@ -417,7 +417,7 @@ class TestCollectorUtilities:
 
     def test_get_tags_dict(self):
         """Test tags list to dict conversion."""
-        from arguscloud.collectors.aws.utils import get_tags_dict
+        from cloudgraph.collectors.aws.utils import get_tags_dict
 
         tags_list = [
             {"Key": "Environment", "Value": "prod"},
@@ -433,7 +433,7 @@ class TestCollectorUtilities:
 
     def test_parse_policy_document(self):
         """Test policy document parsing."""
-        from arguscloud.collectors.aws.utils import parse_policy_document
+        from cloudgraph.collectors.aws.utils import parse_policy_document
 
         # JSON string policy
         response = {
@@ -463,7 +463,7 @@ class TestCollectionContext:
 
     def test_collection_context_success(self):
         """Test successful collection context."""
-        from arguscloud.collectors.aws.utils import CollectionContext
+        from cloudgraph.collectors.aws.utils import CollectionContext
 
         with CollectionContext("test-service") as ctx:
             ctx.set_result([{"id": 1}, {"id": 2}])
@@ -474,7 +474,7 @@ class TestCollectionContext:
 
     def test_collection_context_handles_exception(self):
         """Test that context handles exceptions gracefully."""
-        from arguscloud.collectors.aws.utils import CollectionContext
+        from cloudgraph.collectors.aws.utils import CollectionContext
 
         with CollectionContext("test-service") as ctx:
             raise ValueError("Test error")
@@ -485,7 +485,7 @@ class TestCollectionContext:
 
     def test_collection_context_handles_client_error(self):
         """Test that context handles boto3 ClientError."""
-        from arguscloud.collectors.aws.utils import CollectionContext
+        from cloudgraph.collectors.aws.utils import CollectionContext
         from botocore.exceptions import ClientError
 
         with CollectionContext("test-service") as ctx:

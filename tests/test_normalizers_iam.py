@@ -1,12 +1,12 @@
-"""Tests for arguscloud.normalizers.aws.iam module."""
+"""Tests for cloudgraph.normalizers.aws.iam module."""
 
 import pytest
-from arguscloud.normalizers.aws.iam import (
+from cloudgraph.normalizers.aws.iam import (
     normalize_iam_roles,
     normalize_iam_users,
     normalize_iam_policies,
 )
-from arguscloud.core.graph import CloudProvider
+from cloudgraph.core.graph import CloudProvider
 
 
 class TestNormalizeIamRoles:

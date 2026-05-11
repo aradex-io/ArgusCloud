@@ -1,4 +1,4 @@
-"""Pytest configuration and shared fixtures for ArgusCloud tests.
+"""Pytest configuration and shared fixtures for CloudGraph tests.
 
 This module provides common fixtures used across multiple test modules,
 including mock Neo4j drivers, AWS sessions, and shared test data.
@@ -160,10 +160,10 @@ def app_no_auth(mock_neo4j_driver: MagicMock) -> Generator[Any, None, None]:
     Yields:
         Configured Flask application
     """
-    from arguscloud.api.server import create_app
-    from arguscloud.api.auth import AuthConfig
+    from cloudgraph.api.server import create_app
+    from cloudgraph.api.auth import AuthConfig
 
-    with patch("arguscloud.api.server.get_driver", return_value=mock_neo4j_driver):
+    with patch("cloudgraph.api.server.get_driver", return_value=mock_neo4j_driver):
         config = AuthConfig(enabled=False)
         app = create_app(
             "bolt://localhost:7687",
@@ -199,12 +199,12 @@ def app_with_auth(mock_neo4j_driver: MagicMock) -> Generator[Any, None, None]:
     Yields:
         Configured Flask application with API_KEY stored in config
     """
-    from arguscloud.api.server import create_app
-    from arguscloud.api.auth import AuthConfig, generate_api_key
+    from cloudgraph.api.server import create_app
+    from cloudgraph.api.auth import AuthConfig, generate_api_key
 
     api_key, stored_hash = generate_api_key()
 
-    with patch("arguscloud.api.server.get_driver", return_value=mock_neo4j_driver):
+    with patch("cloudgraph.api.server.get_driver", return_value=mock_neo4j_driver):
         config = AuthConfig(api_keys={"testuser": stored_hash})
         app = create_app(
             "bolt://localhost:7687",
@@ -384,12 +384,12 @@ def sample_attack_paths() -> List[Dict[str, Any]]:
 
 @pytest.fixture
 def clean_environment():
-    """Fixture that cleans ArgusCloud environment variables.
+    """Fixture that cleans CloudGraph environment variables.
 
-    Removes ARGUSCLOUD_* env vars before test and restores after.
+    Removes CLOUDGRAPH_* env vars before test and restores after.
     """
     # Save current env vars
-    saved = {k: v for k, v in os.environ.items() if k.startswith("ARGUSCLOUD_")}
+    saved = {k: v for k, v in os.environ.items() if k.startswith("CLOUDGRAPH_")}
 
     # Clear them
     for key in saved:

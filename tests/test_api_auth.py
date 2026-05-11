@@ -1,10 +1,10 @@
-"""Tests for arguscloud.api.auth module."""
+"""Tests for cloudgraph.api.auth module."""
 
 import pytest
 import time
 from unittest.mock import patch, MagicMock
 
-from arguscloud.api.auth import (
+from cloudgraph.api.auth import (
     generate_api_key,
     validate_api_key,
     create_jwt_token,
@@ -188,11 +188,11 @@ class TestAuthConfig:
     def test_auth_config_from_env(self):
         """Test AuthConfig from environment variables."""
         with patch.dict("os.environ", {
-            "ARGUSCLOUD_AUTH_ENABLED": "true",
-            "ARGUSCLOUD_API_KEYS": "admin:abc123,reader:def456",
-            "ARGUSCLOUD_JWT_SECRET": "test_secret",
-            "ARGUSCLOUD_ALLOW_ANON_HEALTH": "true",
-            "ARGUSCLOUD_ALLOW_ANON_READ": "false",
+            "CLOUDGRAPH_AUTH_ENABLED": "true",
+            "CLOUDGRAPH_API_KEYS": "admin:abc123,reader:def456",
+            "CLOUDGRAPH_JWT_SECRET": "test_secret",
+            "CLOUDGRAPH_ALLOW_ANON_HEALTH": "true",
+            "CLOUDGRAPH_ALLOW_ANON_READ": "false",
         }):
             config = AuthConfig.from_env()
             assert config.enabled is True
@@ -204,7 +204,7 @@ class TestAuthConfig:
     def test_auth_config_from_env_disabled(self):
         """Test AuthConfig from environment with auth disabled."""
         with patch.dict("os.environ", {
-            "ARGUSCLOUD_AUTH_ENABLED": "false",
+            "CLOUDGRAPH_AUTH_ENABLED": "false",
         }, clear=True):
             config = AuthConfig.from_env()
             assert config.enabled is False
@@ -212,7 +212,7 @@ class TestAuthConfig:
     def test_auth_config_from_env_empty_keys(self):
         """Test AuthConfig from environment with empty API keys."""
         with patch.dict("os.environ", {
-            "ARGUSCLOUD_API_KEYS": "",
+            "CLOUDGRAPH_API_KEYS": "",
         }, clear=True):
             config = AuthConfig.from_env()
             assert config.api_keys == {}

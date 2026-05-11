@@ -1,12 +1,12 @@
-"""Tests for arguscloud.exporters module."""
+"""Tests for cloudgraph.exporters module."""
 
 import json
 import os
 import tempfile
 import pytest
-from arguscloud.core.graph import Node, Edge, AttackPath, GraphData, Severity, CloudProvider
-from arguscloud.exporters.json_export import JSONExporter
-from arguscloud.exporters.sarif import SARIFExporter
+from cloudgraph.core.graph import Node, Edge, AttackPath, GraphData, Severity, CloudProvider
+from cloudgraph.exporters.json_export import JSONExporter
+from cloudgraph.exporters.sarif import SARIFExporter
 
 
 class TestJSONExporter:
@@ -59,7 +59,7 @@ class TestJSONExporter:
         data = json.loads(exporter.export())
 
         assert "metadata" in data
-        assert data["metadata"]["tool"] == "ArgusCloud"
+        assert data["metadata"]["tool"] == "CloudGraph"
         assert "version" in data["metadata"]
         assert "generated_at" in data["metadata"]
 
@@ -215,7 +215,7 @@ class TestSARIFExporter:
         data = json.loads(exporter.export())
 
         tool = data["runs"][0]["tool"]["driver"]
-        assert tool["name"] == "ArgusCloud"
+        assert tool["name"] == "CloudGraph"
         assert "version" in tool
         assert "informationUri" in tool
 

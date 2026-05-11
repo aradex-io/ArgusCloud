@@ -1,6 +1,6 @@
-# ArgusCloud UI
+# CloudGraph UI
 
-ArgusCloud UI is a modern web interface for cloud security graph visualization and analysis. It provides interactive graph exploration, security finding analysis, and AWS data collection capabilities.
+CloudGraph UI is a modern web interface for cloud security graph visualization and analysis. It provides interactive graph exploration, security finding analysis, and AWS data collection capabilities.
 
 ## Features
 
@@ -58,7 +58,7 @@ ArgusCloud UI is a modern web interface for cloud security graph visualization a
 
 ## Architecture
 
-The UI is a single-page application that communicates with the ArgusCloud API:
+The UI is a single-page application that communicates with the CloudGraph API:
 
 ```
 ui/
@@ -75,7 +75,7 @@ ui/
 
 ## API Endpoints Used
 
-The UI communicates with these ArgusCloud API endpoints:
+The UI communicates with these CloudGraph API endpoints:
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -93,14 +93,14 @@ The UI communicates with these ArgusCloud API endpoints:
 ## Development
 
 ### Prerequisites
-- ArgusCloud API server running (default: http://localhost:5000)
+- CloudGraph API server running (default: http://localhost:5000)
 - Neo4j database connection
 
 ### Running Locally
 
 1. Start the API server:
    ```bash
-   arguscloud serve --no-auth
+   cloudgraph serve --no-auth
    ```
 
 2. Serve the UI (any static file server):

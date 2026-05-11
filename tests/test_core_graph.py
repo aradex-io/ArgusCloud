@@ -1,7 +1,7 @@
-"""Tests for arguscloud.core.graph module."""
+"""Tests for cloudgraph.core.graph module."""
 
 import pytest
-from arguscloud.core.graph import (
+from cloudgraph.core.graph import (
     Node,
     Edge,
     AttackPath,

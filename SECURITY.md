@@ -18,7 +18,7 @@ Report vulnerabilities privately using **GitHub Security Advisories**:
 1. Go to the "Security" tab of the repository.
 2. Click **"Report a vulnerability"** to open a private advisory.
 3. Alternatively, navigate directly to:
-   <https://github.com/jeremylaratro/arguscloud/security/advisories/new>
+   <https://github.com/jeremylaratro/cloudgraph/security/advisories/new>
 
 This ensures coordinated disclosure and prevents public exposure before a fix is available.
 
@@ -49,7 +49,7 @@ This ensures coordinated disclosure and prevents public exposure before a fix is
 
 ## Security Features
 
-ArgusCloud implements the following security measures:
+CloudGraph implements the following security measures:
 
 ### Authentication & Authorization
 
@@ -78,15 +78,15 @@ ArgusCloud implements the following security measures:
 
 ## Security Best Practices
 
-When deploying ArgusCloud:
+When deploying CloudGraph:
 
 1. **Use HTTPS:** Always deploy behind TLS-terminating proxy
-2. **Restrict CORS:** Configure `ARGUSCLOUD_CORS_ORIGINS` appropriately
+2. **Restrict CORS:** Configure `CLOUDGRAPH_CORS_ORIGINS` appropriately
 3. **Secure Neo4j:** Enable authentication, use strong passwords
 4. **Network Isolation:** Run API and Neo4j in private network
 5. **Least Privilege:** Use read-only Neo4j users where possible
 6. **Audit Logging:** Enable logging for security events
-7. **Regular Updates:** Keep ArgusCloud and dependencies updated
+7. **Regular Updates:** Keep CloudGraph and dependencies updated
 
 ## Security Advisories
 
@@ -98,7 +98,7 @@ Security advisories will be published via:
 
 The following are in scope for security reports:
 
-- ArgusCloud API server vulnerabilities
+- CloudGraph API server vulnerabilities
 - Authentication/authorization bypasses
 - Injection vulnerabilities (Cypher, command, etc.)
 - Sensitive data exposure
@@ -118,4 +118,4 @@ please open a GitHub Discussion.
 
 ---
 
-Thank you for helping keep ArgusCloud secure!
+Thank you for helping keep CloudGraph secure!

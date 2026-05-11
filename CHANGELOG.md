@@ -1,4 +1,4 @@
-# ArgusCloud Changelog
+# CloudGraph Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -8,11 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.5.0] - 2026-01-14
 
 ### Changed
-- **Project Rename**: CloudHound → ArgusCloud
-  - Renamed Python package from `cloudhound` to `arguscloud`
-  - Updated CLI command from `cloudhound` to `arguscloud`
-  - Updated all environment variables from `CLOUDHOUND_*` to `ARGUSCLOUD_*`
-  - Updated Docker container names from `cloudhound-*` to `arguscloud-*`
+- **Project Rename**: CloudHound → CloudGraph
+  - Renamed Python package from `cloudhound` to `cloudgraph`
+  - Updated CLI command from `cloudhound` to `cloudgraph`
+  - Updated all environment variables from `CLOUDHOUND_*` to `CLOUDGRAPH_*`
+  - Updated Docker container names from `cloudhound-*` to `cloudgraph-*`
   - Updated all documentation, UI branding, and references
   - Updated test suite imports and fixtures
 
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Startup Script**: Comprehensive start.sh script for streamlined deployment
-  - ASCII banner with ArgusCloud branding
+  - ASCII banner with CloudGraph branding
   - Dependency checking (Docker, Docker Compose)
   - Environment configuration with dev defaults and prod validation
   - Service startup with progress indicators
@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **UI Documentation**: Comprehensive rewrite of ui/README.md with architecture details
 - **Security Policy**: Updated SECURITY.md with version 0.4.0 in supported versions table
 - **Contributing Guide**: Fixed repository URL in CONTRIBUTING.md
-- **Legacy Naming**: Updated remaining AWSHound references to ArgusCloud in docs/
+- **Legacy Naming**: Updated remaining AWSHound references to CloudGraph in docs/
 
 ### Removed
 - **Historical Documents**: Archived CRITICAL_ANALYSIS.md and REMAINING_REMEDIATION_PLAN.md to docs/archive/

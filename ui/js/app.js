@@ -25,7 +25,7 @@
 
     let savedFilters = [];
     try {
-      const _sfRaw = localStorage.getItem('arguscloud_saved_filters');
+      const _sfRaw = localStorage.getItem('cloudgraph_saved_filters');
       const _sfParsed = _sfRaw ? JSON.parse(_sfRaw) : [];
       if (Array.isArray(_sfParsed)) savedFilters = _sfParsed;
     } catch (e) {
@@ -2125,7 +2125,7 @@
       };
 
       savedFilters.push(filter);
-      localStorage.setItem('arguscloud_saved_filters', JSON.stringify(savedFilters));
+      localStorage.setItem('cloudgraph_saved_filters', JSON.stringify(savedFilters));
       renderSavedFilters();
       showMessage(`Filter "${name}" saved`, 'success');
     }
@@ -2170,7 +2170,7 @@
           e.stopPropagation();
           const id = btn.dataset.id;
           savedFilters = savedFilters.filter(f => f.id !== id);
-          localStorage.setItem('arguscloud_saved_filters', JSON.stringify(savedFilters));
+          localStorage.setItem('cloudgraph_saved_filters', JSON.stringify(savedFilters));
           renderSavedFilters();
         });
       });
@@ -2367,7 +2367,7 @@
         nodes = [];
         edges = [];
         currentProfile = null;
-        localStorage.removeItem('arguscloud_last_profile');
+        localStorage.removeItem('cloudgraph_last_profile');
         if (cy) {
           cy.destroy();
           cy = null;
@@ -2390,7 +2390,7 @@
         currentProfile = name;
 
         // Save as last used profile
-        localStorage.setItem('arguscloud_last_profile', name);
+        localStorage.setItem('cloudgraph_last_profile', name);
 
         // Update available filter options from loaded data
         updateAvailableFilterOptions();
@@ -2455,7 +2455,7 @@
         }
 
         currentProfile = name;
-        localStorage.setItem('arguscloud_last_profile', name);
+        localStorage.setItem('cloudgraph_last_profile', name);
         await loadProfiles();
         document.getElementById('profileSelect').value = name;
 
@@ -2481,7 +2481,7 @@
 
         if (currentProfile === name) {
           currentProfile = null;
-          localStorage.removeItem('arguscloud_last_profile');
+          localStorage.removeItem('cloudgraph_last_profile');
         }
 
         await loadProfiles();
@@ -4101,7 +4101,7 @@
         // Update current profile reference
         if (currentProfile === oldName) {
           currentProfile = newName;
-          localStorage.setItem('arguscloud_last_profile', newName);
+          localStorage.setItem('cloudgraph_last_profile', newName);
         }
 
         // Reload profiles and update selection
@@ -4850,7 +4850,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `arguscloud-report-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `cloudgraph-report-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
     });
@@ -4907,7 +4907,7 @@
     // Layout change — persist selection (L-16)
     document.getElementById('layoutSelect').addEventListener('change', () => {
       const val = document.getElementById('layoutSelect').value;
-      localStorage.setItem('arguscloud_setting_layout', val);
+      localStorage.setItem('cloudgraph_setting_layout', val);
       if (cy) {
         cy.layout({ name: val, animate: true }).run();
       }
@@ -4915,7 +4915,7 @@
 
     // Label position change — persist selection (L-16)
     document.getElementById('labelPos').addEventListener('change', () => {
-      localStorage.setItem('arguscloud_setting_labelPos', document.getElementById('labelPos').value);
+      localStorage.setItem('cloudgraph_setting_labelPos', document.getElementById('labelPos').value);
       if (cy) {
         cy.style(getCyStyle());
       }
@@ -4961,7 +4961,7 @@
       let startWidth = 0;
 
       // Load saved width from localStorage
-      const savedWidth = localStorage.getItem('arguscloud_sidebar_width');
+      const savedWidth = localStorage.getItem('cloudgraph_sidebar_width');
       if (savedWidth) {
         const width = parseInt(savedWidth, 10);
         if (width >= 260 && width <= 600) {
@@ -5004,7 +5004,7 @@
           resizeHandle.classList.remove('dragging');
 
           // Save width to localStorage
-          localStorage.setItem('arguscloud_sidebar_width', sidebar.offsetWidth.toString());
+          localStorage.setItem('cloudgraph_sidebar_width', sidebar.offsetWidth.toString());
         }
       });
 
@@ -5012,7 +5012,7 @@
       resizeHandle.addEventListener('dblclick', () => {
         sidebar.style.width = '280px';
         layout.style.gridTemplateColumns = '280px 1fr';
-        localStorage.removeItem('arguscloud_sidebar_width');
+        localStorage.removeItem('cloudgraph_sidebar_width');
         if (cy) cy.resize();
       });
     }
@@ -5021,7 +5021,7 @@
     document.getElementById('apiBase').addEventListener('change', (e) => {
       const val = e.target.value.trim();
       if (val.startsWith('http')) {
-        localStorage.setItem('arguscloud_setting_apiBase', val);
+        localStorage.setItem('cloudgraph_setting_apiBase', val);
       }
     });
 
@@ -5031,15 +5031,15 @@
     // Initial status check and profile loading
     (async function init() {
       // Restore persisted settings (L-16)
-      const savedApiBase = localStorage.getItem('arguscloud_setting_apiBase');
+      const savedApiBase = localStorage.getItem('cloudgraph_setting_apiBase');
       if (savedApiBase && savedApiBase.startsWith('http')) {
         document.getElementById('apiBase').value = savedApiBase;
       }
-      const savedLayout = localStorage.getItem('arguscloud_setting_layout');
+      const savedLayout = localStorage.getItem('cloudgraph_setting_layout');
       if (savedLayout && KNOWN_LAYOUTS.includes(savedLayout)) {
         document.getElementById('layoutSelect').value = savedLayout;
       }
-      const savedLabelPos = localStorage.getItem('arguscloud_setting_labelPos');
+      const savedLabelPos = localStorage.getItem('cloudgraph_setting_labelPos');
       if (savedLabelPos && ['center', 'top', 'bottom', 'left', 'right'].includes(savedLabelPos)) {
         document.getElementById('labelPos').value = savedLabelPos;
       }
@@ -5068,7 +5068,7 @@
       await loadProfiles();
 
       // Auto-load last used profile
-      const lastProfile = localStorage.getItem('arguscloud_last_profile');
+      const lastProfile = localStorage.getItem('cloudgraph_last_profile');
       if (lastProfile && profiles.some(p => p.name === lastProfile)) {
         document.getElementById('profileSelect').value = lastProfile;
         await loadProfile(lastProfile);

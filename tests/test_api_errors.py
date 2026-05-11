@@ -1,4 +1,4 @@
-"""Tests for arguscloud.api.errors module.
+"""Tests for cloudgraph.api.errors module.
 
 This module tests the standardized error handling classes and
 decorators used across the API.
@@ -10,7 +10,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from flask import Flask, jsonify
 
-from arguscloud.api.errors import (
+from cloudgraph.api.errors import (
     APIError,
     ValidationError,
     NotFoundError,
@@ -352,7 +352,7 @@ class TestSafeEndpoint:
         def test_route():
             raise RuntimeError("Unexpected error")
 
-        with patch("arguscloud.api.errors.logger") as mock_logger:
+        with patch("cloudgraph.api.errors.logger") as mock_logger:
             with app.test_client() as client:
                 client.get("/test")
 
@@ -367,7 +367,7 @@ class TestSafeEndpoint:
         def test_route():
             raise ValueError("Invalid input")
 
-        with patch("arguscloud.api.errors.logger") as mock_logger:
+        with patch("cloudgraph.api.errors.logger") as mock_logger:
             with app.test_client() as client:
                 client.get("/test")
 

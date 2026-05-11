@@ -1,9 +1,9 @@
-"""Tests for arguscloud.rules.aws.iam module."""
+"""Tests for cloudgraph.rules.aws.iam module."""
 
 import pytest
-from arguscloud.core.graph import Node, Edge, Severity
-from arguscloud.core.base import RuleContext
-from arguscloud.rules.aws.iam import (
+from cloudgraph.core.graph import Node, Edge, Severity
+from cloudgraph.core.base import RuleContext
+from cloudgraph.rules.aws.iam import (
     rule_open_trust,
     rule_assume_role_chain,
     rule_user_no_mfa,

@@ -1,4 +1,4 @@
-# ArgusCloud
+# CloudGraph
 
 BloodHound-style graph analytics for multi-cloud environments. Collect, normalize, and visualize cloud resources, trust relationships, and attack paths.
 
@@ -46,8 +46,8 @@ Configure API connection, graph layout algorithm, and appearance options.
 
 ```bash
 # Clone the repository
-git clone https://github.com/jeremylaratro/arguscloud.git
-cd arguscloud
+git clone https://github.com/jeremylaratro/cloudgraph.git
+cd cloudgraph
 
 # Install with pip
 pip install -e .
@@ -70,62 +70,62 @@ docker run -d --name neo4j \
 
 ```bash
 # Using default AWS profile
-arguscloud collect --provider aws --output ./output
+cloudgraph collect --provider aws --output ./output
 
 # Using specific profile and region
-arguscloud collect --provider aws --profile myprofile --region us-east-1 --output ./output
+cloudgraph collect --provider aws --profile myprofile --region us-east-1 --output ./output
 
 # Collect specific services only
-arguscloud collect --provider aws --services iam s3 ec2 lambda
+cloudgraph collect --provider aws --services iam s3 ec2 lambda
 ```
 
 ### Normalize Data
 
 ```bash
 # Generate nodes and edges from collected data
-arguscloud normalize --input ./output
+cloudgraph normalize --input ./output
 ```
 
 ### Analyze for Attack Paths
 
 ```bash
 # Run security rules
-arguscloud analyze --input ./output
+cloudgraph analyze --input ./output
 
 # Filter by severity
-arguscloud analyze --input ./output --severity high
+cloudgraph analyze --input ./output --severity high
 ```
 
 ### Export Reports
 
 ```bash
 # Export to JSON
-arguscloud export --input ./output --format json --output report.json
+cloudgraph export --input ./output --format json --output report.json
 
 # Export to SARIF (for GitHub/Azure DevOps)
-arguscloud export --input ./output --format sarif --output findings.sarif
+cloudgraph export --input ./output --format sarif --output findings.sarif
 
 # Export to standalone HTML report
-arguscloud export --input ./output --format html --output report.html
+cloudgraph export --input ./output --format html --output report.html
 ```
 
 ### Import to Neo4j
 
 ```bash
-arguscloud import --input ./output --neo4j-uri bolt://localhost:7687 --neo4j-user neo4j --neo4j-password letmein123
+cloudgraph import --input ./output --neo4j-uri bolt://localhost:7687 --neo4j-user neo4j --neo4j-password letmein123
 ```
 
 ### Start the API Server
 
 ```bash
 # Start with authentication enabled
-arguscloud serve --port 5000
+cloudgraph serve --port 5000
 
 # Start without authentication (development only)
-arguscloud serve --port 5000 --no-auth
+cloudgraph serve --port 5000 --no-auth
 
 # Generate an API key
-arguscloud keygen
+cloudgraph keygen
 ```
 
 ### Start the UI
@@ -154,7 +154,7 @@ Open http://localhost:8001 in your browser.
 
 ## Attack Path Rules
 
-ArgusCloud automatically detects potential attack paths including:
+CloudGraph automatically detects potential attack paths including:
 
 - **Privilege Escalation**: Users/roles that can escalate to admin
 - **Cross-Account Access**: Trust relationships allowing lateral movement
@@ -164,7 +164,7 @@ ArgusCloud automatically detects potential attack paths including:
 ## Architecture
 
 ```
-arguscloud/
+cloudgraph/
 ├── core/
 │   ├── graph.py       # Core data structures (Node, Edge, AttackPath)
 │   ├── registry.py    # Plugin registries for collectors/normalizers/rules

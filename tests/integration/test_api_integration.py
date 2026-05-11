@@ -1,4 +1,4 @@
-"""Integration tests for ArgusCloud API.
+"""Integration tests for CloudGraph API.
 
 These tests verify the full API stack with a real Neo4j database
 using testcontainers.

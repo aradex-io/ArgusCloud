@@ -1,12 +1,12 @@
-"""Tests for arguscloud.normalizers.aws.ec2 module."""
+"""Tests for cloudgraph.normalizers.aws.ec2 module."""
 
 import pytest
-from arguscloud.normalizers.aws.ec2 import (
+from cloudgraph.normalizers.aws.ec2 import (
     normalize_ec2,
     normalize_ec2_images,
     normalize_vpc,
 )
-from arguscloud.core.graph import CloudProvider
+from cloudgraph.core.graph import CloudProvider
 
 
 class TestNormalizeEC2:

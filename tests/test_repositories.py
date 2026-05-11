@@ -1,4 +1,4 @@
-"""Tests for arguscloud.repositories module.
+"""Tests for cloudgraph.repositories module.
 
 This module tests the Neo4j repository implementation including
 node/edge queries, profile management, and database operations.
@@ -10,8 +10,8 @@ import pytest
 from unittest.mock import MagicMock, patch
 from typing import Any, Dict, List
 
-from arguscloud.repositories.base import GraphRepository, NodeFilter, ProfileData
-from arguscloud.repositories.neo4j_repository import Neo4jGraphRepository
+from cloudgraph.repositories.base import GraphRepository, NodeFilter, ProfileData
+from cloudgraph.repositories.neo4j_repository import Neo4jGraphRepository
 
 
 class TestNodeFilter:

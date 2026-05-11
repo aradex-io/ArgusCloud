@@ -1,6 +1,6 @@
-# ArgusCloud Security Guide
+# CloudGraph Security Guide
 
-This guide covers security best practices for deploying and operating ArgusCloud.
+This guide covers security best practices for deploying and operating CloudGraph.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ This guide covers security best practices for deploying and operating ArgusCloud
 
 ### AWS Credentials
 
-ArgusCloud requires AWS credentials to collect cloud resource data. Follow these best practices:
+CloudGraph requires AWS credentials to collect cloud resource data. Follow these best practices:
 
 #### Never Store Credentials in Code
 
@@ -37,8 +37,8 @@ Prefer temporary credentials (STS) over long-term access keys:
 ```bash
 # Get temporary credentials
 aws sts assume-role \
-  --role-arn arn:aws:iam::123456789012:role/ArgusCloudCollector \
-  --role-session-name arguscloud-collection
+  --role-arn arn:aws:iam::123456789012:role/CloudGraphCollector \
+  --role-session-name cloudgraph-collection
 ```
 
 #### Credential Lifecycle
@@ -50,8 +50,8 @@ aws sts assume-role \
 
 ### API Keys
 
-ArgusCloud API keys should be:
-- Generated using `arguscloud auth generate-key`
+CloudGraph API keys should be:
+- Generated using `cloudgraph auth generate-key`
 - Stored securely (secrets manager, vault)
 - Rotated regularly
 - Scoped to minimum required permissions
@@ -60,14 +60,14 @@ ArgusCloud API keys should be:
 
 ### Minimum Read-Only Policy
 
-Use this policy for ArgusCloud collection:
+Use this policy for CloudGraph collection:
 
 ```json
 {
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "ArgusCloudReadOnly",
+            "Sid": "CloudGraphReadOnly",
             "Effect": "Allow",
             "Action": [
                 "iam:Get*",
@@ -133,7 +133,7 @@ For multi-account environments, create a role in each target account:
         {
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::MANAGEMENT_ACCOUNT:role/ArgusCloudCollector"
+                "AWS": "arn:aws:iam::MANAGEMENT_ACCOUNT:role/CloudGraphCollector"
             },
             "Action": "sts:AssumeRole",
             "Condition": {
@@ -228,9 +228,9 @@ dbms.directories.data=/encrypted-volume/data
 Create dedicated users with minimal permissions:
 
 ```cypher
-// Create read-only user for ArgusCloud
-CREATE USER arguscloud SET PASSWORD 'secure_password' SET PASSWORD CHANGE NOT REQUIRED;
-GRANT ROLE reader TO arguscloud;
+// Create read-only user for CloudGraph
+CREATE USER cloudgraph SET PASSWORD 'secure_password' SET PASSWORD CHANGE NOT REQUIRED;
+GRANT ROLE reader TO cloudgraph;
 
 // Create admin user for management
 CREATE USER admin SET PASSWORD 'admin_password' SET PASSWORD CHANGE NOT REQUIRED;
@@ -241,7 +241,7 @@ GRANT ROLE admin TO admin;
 
 ### JWT Tokens
 
-ArgusCloud uses JWT tokens for API authentication:
+CloudGraph uses JWT tokens for API authentication:
 
 - **Algorithm:** HS256
 - **Expiry:** Configurable (default 1 hour)
@@ -249,7 +249,7 @@ ArgusCloud uses JWT tokens for API authentication:
 
 ```bash
 # Set a strong JWT secret (min 32 characters)
-export ARGUSCLOUD_JWT_SECRET="your-very-long-and-secure-secret-key-here"
+export CLOUDGRAPH_JWT_SECRET="your-very-long-and-secure-secret-key-here"
 ```
 
 ### API Key Authentication
@@ -265,17 +265,17 @@ Configure specific origins (never use `*` in production):
 
 ```bash
 # Single origin
-ARGUSCLOUD_CORS_ORIGINS=https://arguscloud.example.com
+CLOUDGRAPH_CORS_ORIGINS=https://cloudgraph.example.com
 
 # Multiple origins
-ARGUSCLOUD_CORS_ORIGINS=https://arguscloud.example.com,https://admin.example.com
+CLOUDGRAPH_CORS_ORIGINS=https://cloudgraph.example.com,https://admin.example.com
 ```
 
 ## Data Protection
 
 ### Query Validation
 
-ArgusCloud implements whitelist-based Cypher query validation:
+CloudGraph implements whitelist-based Cypher query validation:
 
 **Allowed:**
 - `MATCH ... RETURN ...` (read queries)
@@ -312,7 +312,7 @@ DETACH DELETE n
 ### Enable Logging
 
 ```bash
-ARGUSCLOUD_LOG_LEVEL=INFO
+CLOUDGRAPH_LOG_LEVEL=INFO
 ```
 
 ### Security Events Logged
@@ -365,13 +365,13 @@ Establish security contact procedures:
 
 ```bash
 # Revoke all API keys (emergency)
-arguscloud auth revoke-all
+cloudgraph auth revoke-all
 
 # Disable API authentication temporarily
-ARGUSCLOUD_AUTH_ENABLED=false arguscloud serve
+CLOUDGRAPH_AUTH_ENABLED=false cloudgraph serve
 
 # Force JWT secret rotation (invalidates all tokens)
-export ARGUSCLOUD_JWT_SECRET="new-secret-key"
+export CLOUDGRAPH_JWT_SECRET="new-secret-key"
 ```
 
 ### Vulnerability Reporting
@@ -391,7 +391,7 @@ Use this checklist for production deployments:
 - [ ] Network segmentation in place
 
 ### Authentication
-- [ ] `ARGUSCLOUD_AUTH_ENABLED=true`
+- [ ] `CLOUDGRAPH_AUTH_ENABLED=true`
 - [ ] Strong JWT secret (32+ chars)
 - [ ] API keys rotated regularly
 - [ ] CORS origins configured

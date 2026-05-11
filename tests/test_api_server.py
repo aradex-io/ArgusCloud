@@ -1,11 +1,11 @@
-"""Tests for arguscloud.api.server module."""
+"""Tests for cloudgraph.api.server module."""
 
 import pytest
 import json
 from unittest.mock import patch, MagicMock
 
-from arguscloud.api.server import create_app
-from arguscloud.api.auth import AuthConfig, generate_api_key
+from cloudgraph.api.server import create_app
+from cloudgraph.api.auth import AuthConfig, generate_api_key
 
 
 @pytest.fixture
@@ -21,7 +21,7 @@ def mock_driver():
 @pytest.fixture
 def app_no_auth(mock_driver):
     """Create Flask app with auth disabled."""
-    with patch("arguscloud.api.server.get_driver", return_value=mock_driver):
+    with patch("cloudgraph.api.server.get_driver", return_value=mock_driver):
         config = AuthConfig(enabled=False)
         app = create_app("bolt://localhost:7687", "neo4j", "password", auth_config=config)
         app.config["TESTING"] = True
@@ -38,7 +38,7 @@ def client_no_auth(app_no_auth):
 def app_with_auth(mock_driver):
     """Create Flask app with auth enabled."""
     api_key, stored_hash = generate_api_key()
-    with patch("arguscloud.api.server.get_driver", return_value=mock_driver):
+    with patch("cloudgraph.api.server.get_driver", return_value=mock_driver):
         config = AuthConfig(api_keys={"testuser": stored_hash})
         app = create_app("bolt://localhost:7687", "neo4j", "password", auth_config=config)
         app.config["TESTING"] = True

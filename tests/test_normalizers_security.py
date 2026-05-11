@@ -1,12 +1,12 @@
-"""Tests for arguscloud.normalizers.aws.security module (CloudTrail, GuardDuty, SecurityHub)."""
+"""Tests for cloudgraph.normalizers.aws.security module (CloudTrail, GuardDuty, SecurityHub)."""
 
 import pytest
-from arguscloud.normalizers.aws.security import (
+from cloudgraph.normalizers.aws.security import (
     normalize_cloudtrail,
     normalize_guardduty,
     normalize_securityhub,
 )
-from arguscloud.core.graph import CloudProvider
+from cloudgraph.core.graph import CloudProvider
 
 
 class TestNormalizeCloudTrail:
