@@ -1,9 +1,9 @@
-"""Tests for arguscloud.rules.aws.ec2 module."""
+"""Tests for cloudgraph.rules.aws.ec2 module."""
 
 import pytest
-from arguscloud.core.graph import Node, Severity
-from arguscloud.core.base import RuleContext
-from arguscloud.rules.aws.ec2 import (
+from cloudgraph.core.graph import Node, Severity
+from cloudgraph.core.base import RuleContext
+from cloudgraph.rules.aws.ec2 import (
     rule_open_security_group,
     rule_imds_exposure,
     rule_public_snapshot,

@@ -17,7 +17,7 @@ format:
 
 # Type-check with mypy
 typecheck:
-	mypy arguscloud/ awshound/
+	mypy cloudgraph/ awshound/
 
 # Run tests (uses addopts from pyproject.toml)
 test:
@@ -25,11 +25,11 @@ test:
 
 # Run tests with coverage report (explicit flags, overriding addopts)
 test-cov:
-	pytest --cov=arguscloud --cov=awshound --cov-report=term-missing --cov-report=html
+	pytest --cov=cloudgraph --cov=awshound --cov-report=term-missing --cov-report=html
 
 # Start the API server in development mode
 serve:
-	python -m arguscloud.api.wsgi
+	python -m cloudgraph.api.wsgi
 
 # Remove byte-code caches and build artifacts
 clean:

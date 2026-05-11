@@ -1,4 +1,4 @@
-"""Tests for arguscloud.plugins module.
+"""Tests for cloudgraph.plugins module.
 
 This module tests the plugin system including discovery, loading,
 unloading, and lifecycle management.
@@ -10,8 +10,8 @@ import pytest
 from unittest.mock import MagicMock, patch, PropertyMock
 from typing import List
 
-from arguscloud.plugins.base import Plugin, PluginInfo, VALID_PACKAGE_NAME_PATTERN
-from arguscloud.plugins.registry import (
+from cloudgraph.plugins.base import Plugin, PluginInfo, VALID_PACKAGE_NAME_PATTERN
+from cloudgraph.plugins.registry import (
     PluginRegistry,
     get_registry,
     discover_plugins,
@@ -446,14 +446,14 @@ class TestGetRegistry:
 
     def test_get_registry_returns_instance(self):
         """Test get_registry returns PluginRegistry instance."""
-        with patch("arguscloud.plugins.registry._registry", None):
+        with patch("cloudgraph.plugins.registry._registry", None):
             registry = get_registry()
 
             assert isinstance(registry, PluginRegistry)
 
     def test_get_registry_returns_same_instance(self):
         """Test get_registry returns same instance on multiple calls."""
-        with patch("arguscloud.plugins.registry._registry", None):
+        with patch("cloudgraph.plugins.registry._registry", None):
             registry1 = get_registry()
             registry2 = get_registry()
 
@@ -465,7 +465,7 @@ class TestDiscoverPlugins:
 
     def test_discover_plugins_uses_registry(self):
         """Test discover_plugins uses global registry."""
-        with patch("arguscloud.plugins.registry.get_registry") as mock_get:
+        with patch("cloudgraph.plugins.registry.get_registry") as mock_get:
             mock_registry = MagicMock()
             mock_registry.discover.return_value = ["plugin-1"]
             mock_get.return_value = mock_registry
@@ -481,7 +481,7 @@ class TestLoadPlugins:
 
     def test_load_plugins_uses_registry(self):
         """Test load_plugins uses global registry."""
-        with patch("arguscloud.plugins.registry.get_registry") as mock_get:
+        with patch("cloudgraph.plugins.registry.get_registry") as mock_get:
             mock_registry = MagicMock()
             mock_registry.load_all.return_value = 2
             mock_get.return_value = mock_registry

@@ -1,5 +1,5 @@
-# ArgusCloud API Dockerfile
-# Multi-stage production build for the ArgusCloud API server
+# CloudGraph API Dockerfile
+# Multi-stage production build for the CloudGraph API server
 
 # =============================================================================
 # Stage 1: Builder - Install dependencies and build the package
@@ -32,7 +32,7 @@ RUN pip install --upgrade pip setuptools wheel && \
     pip install ".[prod]"
 
 # Copy application code
-COPY arguscloud/ ./arguscloud/
+COPY cloudgraph/ ./cloudgraph/
 COPY awshound/ ./awshound/
 
 # Install the application
@@ -44,20 +44,20 @@ RUN pip install --no-deps .
 FROM python:3.11-slim AS runtime
 
 # Labels for container metadata
-LABEL org.opencontainers.image.title="ArgusCloud API" \
+LABEL org.opencontainers.image.title="CloudGraph API" \
       org.opencontainers.image.description="Cloud security graph analytics API server" \
       org.opencontainers.image.version="0.5.0" \
-      org.opencontainers.image.vendor="ArgusCloud" \
-      org.opencontainers.image.source="https://github.com/jeremylaratro/arguscloud"
+      org.opencontainers.image.vendor="CloudGraph" \
+      org.opencontainers.image.source="https://github.com/jeremylaratro/cloudgraph"
 
 # Runtime environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1 \
     # Application defaults
-    ARGUSCLOUD_API_HOST=0.0.0.0 \
-    ARGUSCLOUD_API_PORT=9847 \
-    ARGUSCLOUD_LOG_LEVEL=INFO \
+    CLOUDGRAPH_API_HOST=0.0.0.0 \
+    CLOUDGRAPH_API_PORT=9847 \
+    CLOUDGRAPH_LOG_LEVEL=INFO \
     # Virtual environment path
     PATH="/opt/venv/bin:$PATH"
 
@@ -71,21 +71,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean
 
 # Create non-root user for security
-RUN groupadd --gid 1000 arguscloud && \
-    useradd --uid 1000 --gid arguscloud --shell /bin/bash --create-home arguscloud
+RUN groupadd --gid 1000 cloudgraph && \
+    useradd --uid 1000 --gid cloudgraph --shell /bin/bash --create-home cloudgraph
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code (needed for some dynamic imports)
-COPY --chown=arguscloud:arguscloud arguscloud/ ./arguscloud/
-COPY --chown=arguscloud:arguscloud awshound/ ./awshound/
+COPY --chown=cloudgraph:cloudgraph cloudgraph/ ./cloudgraph/
+COPY --chown=cloudgraph:cloudgraph awshound/ ./awshound/
 
 # Create data directory for uploads/exports
-RUN mkdir -p /app/data && chown arguscloud:arguscloud /app/data
+RUN mkdir -p /app/data && chown cloudgraph:cloudgraph /app/data
 
 # Switch to non-root user
-USER arguscloud
+USER cloudgraph
 
 # Expose API port
 EXPOSE 9847
@@ -110,4 +110,4 @@ CMD ["gunicorn", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
      "--capture-output", \
-     "arguscloud.api.wsgi:application"]
+     "cloudgraph.api.wsgi:application"]

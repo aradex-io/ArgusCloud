@@ -1,9 +1,9 @@
-"""Tests for arguscloud.rules.aws.compute module."""
+"""Tests for cloudgraph.rules.aws.compute module."""
 
 import pytest
-from arguscloud.core.graph import Node, Severity
-from arguscloud.core.base import RuleContext
-from arguscloud.rules.aws.compute import (
+from cloudgraph.core.graph import Node, Severity
+from cloudgraph.core.base import RuleContext
+from cloudgraph.rules.aws.compute import (
     rule_lambda_public_url,
     rule_eks_public_endpoint,
     rule_codebuild_privileged,

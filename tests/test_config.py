@@ -1,4 +1,4 @@
-"""Tests for arguscloud.config module.
+"""Tests for cloudgraph.config module.
 
 This module tests configuration management including environment
 variable loading, settings validation, and caching behavior.
@@ -10,7 +10,7 @@ import os
 import pytest
 from unittest.mock import patch
 
-from arguscloud.config import Settings, get_settings
+from cloudgraph.config import Settings, get_settings
 
 
 class TestSettings:
@@ -34,11 +34,11 @@ class TestSettings:
 
     def test_settings_from_environment(self, clean_environment):
         """Test Settings loads from environment variables."""
-        os.environ["ARGUSCLOUD_API_HOST"] = "127.0.0.1"
-        os.environ["ARGUSCLOUD_API_PORT"] = "8080"
-        os.environ["ARGUSCLOUD_NEO4J_URI"] = "bolt://neo4j:7687"
-        os.environ["ARGUSCLOUD_NEO4J_USER"] = "admin"
-        os.environ["ARGUSCLOUD_NEO4J_PASSWORD"] = "secret"
+        os.environ["CLOUDGRAPH_API_HOST"] = "127.0.0.1"
+        os.environ["CLOUDGRAPH_API_PORT"] = "8080"
+        os.environ["CLOUDGRAPH_NEO4J_URI"] = "bolt://neo4j:7687"
+        os.environ["CLOUDGRAPH_NEO4J_USER"] = "admin"
+        os.environ["CLOUDGRAPH_NEO4J_PASSWORD"] = "secret"
 
         settings = Settings()
 
@@ -50,7 +50,7 @@ class TestSettings:
 
     def test_settings_auth_enabled_from_env(self, clean_environment):
         """Test Settings loads auth_enabled from environment."""
-        os.environ["ARGUSCLOUD_AUTH_ENABLED"] = "false"
+        os.environ["CLOUDGRAPH_AUTH_ENABLED"] = "false"
 
         settings = Settings()
 
@@ -58,7 +58,7 @@ class TestSettings:
 
     def test_settings_auth_enabled_true(self, clean_environment):
         """Test Settings parses auth_enabled=true."""
-        os.environ["ARGUSCLOUD_AUTH_ENABLED"] = "true"
+        os.environ["CLOUDGRAPH_AUTH_ENABLED"] = "true"
 
         settings = Settings()
 
@@ -66,7 +66,7 @@ class TestSettings:
 
     def test_settings_jwt_expiry_from_env(self, clean_environment):
         """Test Settings loads jwt_expiry from environment."""
-        os.environ["ARGUSCLOUD_JWT_EXPIRY"] = "7200"
+        os.environ["CLOUDGRAPH_JWT_EXPIRY"] = "7200"
 
         settings = Settings()
 
@@ -74,7 +74,7 @@ class TestSettings:
 
     def test_settings_log_level_from_env(self, clean_environment):
         """Test Settings loads log_level from environment."""
-        os.environ["ARGUSCLOUD_LOG_LEVEL"] = "DEBUG"
+        os.environ["CLOUDGRAPH_LOG_LEVEL"] = "DEBUG"
 
         settings = Settings()
 
@@ -82,7 +82,7 @@ class TestSettings:
 
     def test_settings_max_query_limit_from_env(self, clean_environment):
         """Test Settings loads max_query_limit from environment."""
-        os.environ["ARGUSCLOUD_MAX_QUERY_LIMIT"] = "5000"
+        os.environ["CLOUDGRAPH_MAX_QUERY_LIMIT"] = "5000"
 
         settings = Settings()
 
@@ -97,7 +97,7 @@ class TestSettings:
 
     def test_settings_max_zip_size_from_env(self, clean_environment):
         """Test Settings loads max_zip_size from environment."""
-        os.environ["ARGUSCLOUD_MAX_ZIP_SIZE"] = str(100 * 1024 * 1024)  # 100MB
+        os.environ["CLOUDGRAPH_MAX_ZIP_SIZE"] = str(100 * 1024 * 1024)  # 100MB
 
         settings = Settings()
 
@@ -105,7 +105,7 @@ class TestSettings:
 
     def test_settings_max_zip_files_from_env(self, clean_environment):
         """Test Settings loads max_zip_files from environment."""
-        os.environ["ARGUSCLOUD_MAX_ZIP_FILES"] = "500"
+        os.environ["CLOUDGRAPH_MAX_ZIP_FILES"] = "500"
 
         settings = Settings()
 
@@ -135,7 +135,7 @@ class TestSettingsGetCorsOrigins:
         settings = Settings()
 
         # Set env var AFTER creating settings (bypasses pydantic validation)
-        os.environ["ARGUSCLOUD_CORS_ORIGINS"] = "http://app1.com,http://app2.com,http://app3.com"
+        os.environ["CLOUDGRAPH_CORS_ORIGINS"] = "http://app1.com,http://app2.com,http://app3.com"
 
         origins = settings.get_cors_origins()
 
@@ -148,7 +148,7 @@ class TestSettingsGetCorsOrigins:
         """Test get_cors_origins strips whitespace from comma-separated values."""
         settings = Settings()
 
-        os.environ["ARGUSCLOUD_CORS_ORIGINS"] = "http://app1.com , http://app2.com , http://app3.com"
+        os.environ["CLOUDGRAPH_CORS_ORIGINS"] = "http://app1.com , http://app2.com , http://app3.com"
 
         origins = settings.get_cors_origins()
 
@@ -160,7 +160,7 @@ class TestSettingsGetCorsOrigins:
         """Test get_cors_origins filters out empty strings."""
         settings = Settings()
 
-        os.environ["ARGUSCLOUD_CORS_ORIGINS"] = "http://app1.com,,http://app2.com,"
+        os.environ["CLOUDGRAPH_CORS_ORIGINS"] = "http://app1.com,,http://app2.com,"
 
         origins = settings.get_cors_origins()
 
@@ -181,10 +181,10 @@ class TestSettingsGetCorsOrigins:
 class TestSettingsEnvPrefix:
     """Tests for Settings environment variable prefix."""
 
-    def test_settings_uses_arguscloud_prefix(self, clean_environment):
-        """Test Settings uses ARGUSCLOUD_ prefix."""
+    def test_settings_uses_cloudgraph_prefix(self, clean_environment):
+        """Test Settings uses CLOUDGRAPH_ prefix."""
         # Set with prefix
-        os.environ["ARGUSCLOUD_API_PORT"] = "9999"
+        os.environ["CLOUDGRAPH_API_PORT"] = "9999"
 
         # Set without prefix (should be ignored)
         os.environ["API_PORT"] = "8888"
@@ -195,7 +195,7 @@ class TestSettingsEnvPrefix:
 
     def test_settings_case_insensitive(self, clean_environment):
         """Test Settings is case insensitive for env vars."""
-        os.environ["arguscloud_api_port"] = "9999"
+        os.environ["cloudgraph_api_port"] = "9999"
 
         settings = Settings()
 
@@ -245,14 +245,14 @@ class TestSettingsValidation:
 
     def test_settings_invalid_port_type_raises_error(self, clean_environment):
         """Test Settings raises error for invalid port type."""
-        os.environ["ARGUSCLOUD_API_PORT"] = "not-a-number"
+        os.environ["CLOUDGRAPH_API_PORT"] = "not-a-number"
 
         with pytest.raises(Exception):  # Pydantic validation error
             Settings()
 
     def test_settings_negative_port_accepted(self, clean_environment):
         """Test Settings behavior with negative port (depends on validation)."""
-        os.environ["ARGUSCLOUD_API_PORT"] = "-1"
+        os.environ["CLOUDGRAPH_API_PORT"] = "-1"
 
         # This might be accepted by default unless we add validators
         settings = Settings()
@@ -260,7 +260,7 @@ class TestSettingsValidation:
 
     def test_settings_invalid_jwt_expiry_type(self, clean_environment):
         """Test Settings raises error for invalid jwt_expiry type."""
-        os.environ["ARGUSCLOUD_JWT_EXPIRY"] = "not-a-number"
+        os.environ["CLOUDGRAPH_JWT_EXPIRY"] = "not-a-number"
 
         with pytest.raises(Exception):
             Settings()
@@ -308,15 +308,15 @@ class TestSettingsIntegration:
     def test_production_config(self, clean_environment):
         """Test typical production configuration."""
         import json
-        os.environ["ARGUSCLOUD_API_HOST"] = "0.0.0.0"
-        os.environ["ARGUSCLOUD_API_PORT"] = "9847"
-        os.environ["ARGUSCLOUD_NEO4J_URI"] = "bolt://neo4j-cluster:7687"
-        os.environ["ARGUSCLOUD_NEO4J_USER"] = "neo4j"
-        os.environ["ARGUSCLOUD_NEO4J_PASSWORD"] = "secure-password"
-        os.environ["ARGUSCLOUD_JWT_SECRET"] = "super-secret-key"
-        os.environ["ARGUSCLOUD_AUTH_ENABLED"] = "true"
-        os.environ["ARGUSCLOUD_CORS_ORIGINS"] = json.dumps(["https://app.example.com"])
-        os.environ["ARGUSCLOUD_LOG_LEVEL"] = "WARNING"
+        os.environ["CLOUDGRAPH_API_HOST"] = "0.0.0.0"
+        os.environ["CLOUDGRAPH_API_PORT"] = "9847"
+        os.environ["CLOUDGRAPH_NEO4J_URI"] = "bolt://neo4j-cluster:7687"
+        os.environ["CLOUDGRAPH_NEO4J_USER"] = "neo4j"
+        os.environ["CLOUDGRAPH_NEO4J_PASSWORD"] = "secure-password"
+        os.environ["CLOUDGRAPH_JWT_SECRET"] = "super-secret-key"
+        os.environ["CLOUDGRAPH_AUTH_ENABLED"] = "true"
+        os.environ["CLOUDGRAPH_CORS_ORIGINS"] = json.dumps(["https://app.example.com"])
+        os.environ["CLOUDGRAPH_LOG_LEVEL"] = "WARNING"
 
         settings = Settings()
 
@@ -328,8 +328,8 @@ class TestSettingsIntegration:
 
     def test_development_config(self, clean_environment):
         """Test typical development configuration."""
-        os.environ["ARGUSCLOUD_AUTH_ENABLED"] = "false"
-        os.environ["ARGUSCLOUD_LOG_LEVEL"] = "DEBUG"
+        os.environ["CLOUDGRAPH_AUTH_ENABLED"] = "false"
+        os.environ["CLOUDGRAPH_LOG_LEVEL"] = "DEBUG"
 
         settings = Settings()
 

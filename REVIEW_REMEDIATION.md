@@ -1,4 +1,4 @@
-# ArgusCloud — Remediation Summary
+# CloudGraph — Remediation Summary
 
 **Branch:** claude/app-review-findings-W0QvG
 **Findings doc:** REVIEW_FINDINGS.md
@@ -27,7 +27,7 @@
 | Finding | Severity | Status | Commit | Notes |
 |---------|----------|--------|--------|-------|
 | C-01 | Critical | DEFERRED | — | Requires git filter-repo + cred rotation by repo owner. `data/` files removed from HEAD (git rm) but history not purged. |
-| C-02 | Critical | FIXED | 6e05eef | Dockerfile `COPY` and CMD now use `arguscloud/` throughout. |
+| C-02 | Critical | FIXED | 6e05eef | Dockerfile `COPY` and CMD now use `cloudgraph/` throughout. |
 | C-03 | Critical | FIXED | e5c618d | `VALID_EDGE_TYPES` frozenset allowlist + ValueError on unknown type. |
 | C-04 | Critical | FIXED | e5c618d | All `letmein123` defaults removed; `start.sh` now explicitly rejects that value as a production guard; `.env.example` uses `<CHANGE_ME>`. |
 | C-05 | Critical | FIXED | e5c618d | `AUTH_ENABLED` defaults to `true` in dev compose and `start.sh`. |
@@ -38,13 +38,13 @@
 | H-03 | High | NOT-DONE | — | UI auth flow (login form, token storage, fetch wrapper) not implemented. Deferred — requires significant frontend architecture work. |
 | H-04 | High | FIXED | e5c618d | `CORS(app)` wildcard removed; `after_request` hook gates `Allow-Credentials` on origin allowlist. |
 | H-05 | High | PARTIAL | 6e05eef | `git rm -r --cached data/` committed; files removed from HEAD. History purge (filter-repo) blocked on repo owner action. |
-| H-06 | High | FIXED | 6e05eef | `pyproject.toml` URLs updated to arguscloud; `.env.example` declares `0.5.0`; Dockerfile OCI labels aligned. |
+| H-06 | High | FIXED | 6e05eef | `pyproject.toml` URLs updated to cloudgraph; `.env.example` declares `0.5.0`; Dockerfile OCI labels aligned. |
 | H-07 | High | FIXED | 6e05eef | `SECURITY.md` now instructs GitHub Security Advisories; table updated to `0.5.x` supported. |
 | H-08 | High | FIXED | dab21b8 | `_upsert_profile_atomic` wraps all writes in `session.execute_write` with UNWIND batching. |
 | H-09 | High | FIXED | dab21b8 | `_ensure_schema()` called on driver init; `CREATE CONSTRAINT resource_id_unique` runs at startup. |
 | H-10 | High | NOT-DONE | — | Two divergent normalizer paths still exist. Consolidation deferred — large refactor. |
 | H-11 | High | NOT-DONE | — | EC2/SG/VPC node IDs still use bare AWS IDs, not ARNs. Deferred. |
-| H-12 | High | FIXED | 41b5714 | Both `awshound/rules.py` and `arguscloud/normalizers/aws/ec2.py` now check `Ipv6Ranges` / `::/0`. |
+| H-12 | High | FIXED | 41b5714 | Both `awshound/rules.py` and `cloudgraph/normalizers/aws/ec2.py` now check `Ipv6Ranges` / `::/0`. |
 | H-13 | High | FIXED | 41b5714 | `rule_codepipeline_risk` disabled with comment explaining reason; `rule_codebuild_secret_exfil` uses keyword filter from new engine. |
 | H-14 | High | NOT-DONE | — | Pydantic models still not used for validation at request boundaries. Deferred. |
 | H-15 | High | NOT-DONE | — | `app.run()` still used in `cmd_serve`. Deferred (gunicorn exec replacement). |
@@ -66,10 +66,10 @@
 | M-10 | Medium | NOT-DONE | — | `extract_principals` still ignores `Effect`/`Condition`/`NotPrincipal`. Deferred. |
 | M-11 | Medium | FIXED | 41b5714 | `cloudtrail-missing` severity upgraded to `high` in active engine. |
 | M-12 | Medium | NOT-DONE | — | Public EC2 snapshot detection still conflated (encryption vs is_public). Deferred. |
-| M-13 | Medium | FIXED | 41b5714 | `rule_rds_publicly_accessible` added to both `arguscloud/rules/aws/data.py` and `awshound/rules.py`. |
+| M-13 | Medium | FIXED | 41b5714 | `rule_rds_publicly_accessible` added to both `cloudgraph/rules/aws/data.py` and `awshound/rules.py`. |
 | M-14 | Medium | NOT-DONE | — | IAM privilege escalation rules (PassRole, UpdateFunctionCode, CloudFormation) not yet added. Deferred. |
 | M-15 | Medium | NOT-DONE | — | `assume-role-chain` BFS still O(P×A×BFS). Deferred. |
-| M-16 | Medium | FIXED | becba74 | `arguscloud/exporters/html.py` uses `html.escape()` on all dynamic values (5 call sites). |
+| M-16 | Medium | FIXED | becba74 | `cloudgraph/exporters/html.py` uses `html.escape()` on all dynamic values (5 call sites). |
 | M-17 | Medium | FIXED | becba74 | `applyFilters(nodes, edges)` call at line 350 now passes module-level args. |
 | M-18 | Medium | FIXED | becba74 | `debounce()` utility added; search input uses 300ms debounce; Cytoscape updates use `cy.batch()`. |
 | M-19 | Medium | NOT-DONE | — | ARIA attributes and focus trap not added to modals. Deferred. |
@@ -83,8 +83,8 @@
 | M-27 | Medium | FIXED | e5c618d | `.env.example` uses `<CHANGE_ME>` with generation instructions. |
 | M-28 | Medium | FIXED | 6e05eef | `.pre-commit-config.yaml` and `Makefile` added. |
 | M-29 | Medium | NOT-DONE | — | Plugin registry bridge not implemented. Deferred. |
-| M-30 | Medium | NOT-DONE | — | Dual codebase (awshound vs arguscloud collectors) still present. Long-term migration needed. |
-| L-01 | Low | FIXED | e5c618d | JWT `iss="arguscloud"` and `aud="arguscloud-api"` required at encode/decode. |
+| M-30 | Medium | NOT-DONE | — | Dual codebase (awshound vs cloudgraph collectors) still present. Long-term migration needed. |
+| L-01 | Low | FIXED | e5c618d | JWT `iss="cloudgraph"` and `aud="cloudgraph-api"` required at encode/decode. |
 | L-02 | Low | FIXED | e5c618d | `/plugins` strips `errors` key from unauthenticated responses. |
 | L-03 | Low | NOT-DONE | — | CLI commands still raise raw tracebacks. Deferred. |
 | L-04 | Low | NOT-DONE | — | `get_job`/`list_jobs` dict access still lock-free. Deferred. |
@@ -96,7 +96,7 @@
 | L-10 | Low | NOT-DONE | — | 28+ near-duplicate normalizer handlers. Deferred (accelerate M-30 retirement). |
 | L-11 | Low | NOT-DONE | — | `NodeFilter.limit` int not validated/capped. Deferred. |
 | L-12 | Low | FIXED | e5c618d | `get_profile` and `delete_profile` now call `validate_profile_name`. |
-| L-13 | Low | FIXED | becba74 | `arguscloud_saved_filters` JSON.parse wrapped in try/catch. |
+| L-13 | Low | FIXED | becba74 | `cloudgraph_saved_filters` JSON.parse wrapped in try/catch. |
 | L-14 | Low | NOT-DONE | — | Upload modal interval leak. Deferred. |
 | L-15 | Low | FIXED | becba74 | `<pre>` node detail uses `textContent` (not innerHTML). |
 | L-16 | Low | FIXED | becba74 | API base URL persisted to `localStorage` and restored on init. |
@@ -153,7 +153,7 @@ Note: The smoke test verified via `create_app(uri, user, password, auth_config)`
 - **H-11**: EC2/SG/VPC node IDs use bare AWS IDs (not ARNs) — multi-account graph corruption.
 
 ### Priority 3 — Medium correctness/completeness
-- **M-30 / H-10**: Retire one of the two collector codebases (awshound vs arguscloud/collectors/aws/).
+- **M-30 / H-10**: Retire one of the two collector codebases (awshound vs cloudgraph/collectors/aws/).
 - **M-10**: `extract_principals` ignores `Effect`/`Condition` — false positives on restricted policies.
 - **M-12**: Public EC2 snapshot rule conflates encryption with is_public.
 - **M-14**: Missing IAM privilege escalation rules (PassRole, UpdateFunctionCode, CloudFormation).
@@ -178,7 +178,7 @@ Note: The smoke test verified via `create_app(uri, user, password, auth_config)`
 | Check | File(s) | Result |
 |-------|---------|--------|
 | C-02: no cloudhound in Dockerfile | `Dockerfile` | PASS |
-| H-06: ARGUSCLOUD_VERSION in .env.example | `.env.example` | PASS (0.5.0) |
+| H-06: CLOUDGRAPH_VERSION in .env.example | `.env.example` | PASS (0.5.0) |
 | H-07: GitHub Security Advisories in SECURITY.md | `SECURITY.md` | PASS |
 | H-19: set -euo pipefail in start.sh | `start.sh` | PASS |
 | L-17: index.original.html deleted | `ui/` | PASS |
@@ -187,30 +187,30 @@ Note: The smoke test verified via `create_app(uri, user, password, auth_config)`
 | M-28: Makefile and .pre-commit-config.yaml | repo root | PASS |
 | H-21: CI workflow exists | `.github/workflows/ci.yml` | PASS |
 | H-05: data/ untracked | `git ls-files data/` | PASS (0 files) |
-| C-03: VALID_EDGE_TYPES allowlist + check | `arguscloud/repositories/neo4j_repository.py` | PASS |
+| C-03: VALID_EDGE_TYPES allowlist + check | `cloudgraph/repositories/neo4j_repository.py` | PASS |
 | C-04: letmein123 as a default | all source files | PASS (only in validation guard) |
 | C-05: AUTH_ENABLED defaults to true | `docker-compose.yml` | PASS |
-| H-04: no CORS(app) wildcard | `arguscloud/api/server.py` | PASS |
-| H-17: logger.exception in collect.py | `arguscloud/api/collect.py` | PASS (3 call sites) |
-| L-01: JWT_ISSUER/JWT_AUDIENCE | `arguscloud/api/auth.py` | PASS |
-| C-06/H-16: all 4 init functions in create_app | `arguscloud/api/server.py` | PASS |
-| M-01: jwt_expiry in AuthConfig | `arguscloud/api/auth.py` | PASS |
-| M-05: _job_manager_lock/threading.Lock | `arguscloud/api/collect.py`, `uploads.py` | PASS |
-| C-07: evaluate_all_rules called | `arguscloud/cli/main.py` | PASS |
-| H-12: Ipv6Ranges/::/0 check | `awshound/rules.py`, `arguscloud/normalizers/aws/ec2.py` | PASS |
+| H-04: no CORS(app) wildcard | `cloudgraph/api/server.py` | PASS |
+| H-17: logger.exception in collect.py | `cloudgraph/api/collect.py` | PASS (3 call sites) |
+| L-01: JWT_ISSUER/JWT_AUDIENCE | `cloudgraph/api/auth.py` | PASS |
+| C-06/H-16: all 4 init functions in create_app | `cloudgraph/api/server.py` | PASS |
+| M-01: jwt_expiry in AuthConfig | `cloudgraph/api/auth.py` | PASS |
+| M-05: _job_manager_lock/threading.Lock | `cloudgraph/api/collect.py`, `uploads.py` | PASS |
+| C-07: evaluate_all_rules called | `cloudgraph/cli/main.py` | PASS |
+| H-12: Ipv6Ranges/::/0 check | `awshound/rules.py`, `cloudgraph/normalizers/aws/ec2.py` | PASS |
 | H-13: rule_codepipeline_risk disabled | `awshound/rules.py` | PASS (disabled with comment) |
 | M-08: KMS skip in rule_public_s3 | `awshound/rules.py` | PASS |
 | M-09: same-account KMS skip | `awshound/rules.py` | PASS |
 | M-11: cloudtrail-missing severity=high | `awshound/rules.py` | PASS |
-| M-13: rule_rds_publicly_accessible | `arguscloud/rules/aws/data.py`, `awshound/rules.py` | PASS |
-| H-09: _ensure_schema/CREATE CONSTRAINT | `arguscloud/repositories/neo4j_repository.py` | PASS |
-| H-08: _upsert_profile_atomic/execute_write | `arguscloud/repositories/neo4j_repository.py` | PASS |
-| M-07: list_profiles no N+1 loop | `arguscloud/repositories/neo4j_repository.py` | PASS (single aggregating query) |
-| L-05: __post_init__ on Node/Edge | `arguscloud/core/graph.py` | PASS (3 classes) |
+| M-13: rule_rds_publicly_accessible | `cloudgraph/rules/aws/data.py`, `awshound/rules.py` | PASS |
+| H-09: _ensure_schema/CREATE CONSTRAINT | `cloudgraph/repositories/neo4j_repository.py` | PASS |
+| H-08: _upsert_profile_atomic/execute_write | `cloudgraph/repositories/neo4j_repository.py` | PASS |
+| M-07: list_profiles no N+1 loop | `cloudgraph/repositories/neo4j_repository.py` | PASS (single aggregating query) |
+| L-05: __post_init__ on Node/Edge | `cloudgraph/core/graph.py` | PASS (3 classes) |
 | H-01: escapeHtml call count | `ui/js/app.js` | PASS (32 calls) |
 | H-02: CSP in nginx.conf | `ui/nginx.conf` | PASS |
 | H-02: crossorigin on CDN scripts | `ui/index.html` | PASS |
-| M-16: html.escape count | `arguscloud/exporters/html.py` | PASS (5 calls) |
+| M-16: html.escape count | `cloudgraph/exporters/html.py` | PASS (5 calls) |
 | M-17: applyFilters(nodes, edges) | `ui/js/app.js` | PASS |
 | M-18: debounce present | `ui/js/app.js` | PASS |
 | L-13: try/catch on saved filters JSON.parse | `ui/js/app.js` | PASS |

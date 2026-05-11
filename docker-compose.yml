@@ -1,4 +1,4 @@
-# ArgusCloud Development Docker Compose
+# CloudGraph Development Docker Compose
 # Usage: docker compose up
 #
 # This configuration is optimized for local development with:
@@ -13,7 +13,7 @@ services:
   # ============================================================================
   neo4j:
     image: neo4j:5
-    container_name: arguscloud-neo4j
+    container_name: cloudgraph-neo4j
     restart: unless-stopped
     ports:
       - "7474:7474"   # HTTP browser interface
@@ -37,34 +37,34 @@ services:
       retries: 10
       start_period: 30s
     networks:
-      - arguscloud
+      - cloudgraph
 
   # ============================================================================
-  # ArgusCloud API Server
+  # CloudGraph API Server
   # ============================================================================
   api:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: arguscloud-api
+    container_name: cloudgraph-api
     restart: unless-stopped
     ports:
       - "9847:9847"
     environment:
       # Neo4j connection
-      ARGUSCLOUD_NEO4J_URI: bolt://neo4j:7687
-      ARGUSCLOUD_NEO4J_USER: ${NEO4J_USER:-neo4j}
-      ARGUSCLOUD_NEO4J_PASSWORD: ${NEO4J_PASSWORD:?NEO4J_PASSWORD must be set}
+      CLOUDGRAPH_NEO4J_URI: bolt://neo4j:7687
+      CLOUDGRAPH_NEO4J_USER: ${NEO4J_USER:-neo4j}
+      CLOUDGRAPH_NEO4J_PASSWORD: ${NEO4J_PASSWORD:?NEO4J_PASSWORD must be set}
       # Development settings
-      ARGUSCLOUD_AUTH_ENABLED: ${AUTH_ENABLED:-true}
-      ARGUSCLOUD_LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
-      ARGUSCLOUD_CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000}
+      CLOUDGRAPH_AUTH_ENABLED: ${AUTH_ENABLED:-true}
+      CLOUDGRAPH_LOG_LEVEL: ${LOG_LEVEL:-DEBUG}
+      CLOUDGRAPH_CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000}
       # JWT settings (only needed if auth enabled)
-      ARGUSCLOUD_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set; generate with: openssl rand -base64 32}
-      ARGUSCLOUD_JWT_EXPIRY: ${JWT_EXPIRY:-3600}
+      CLOUDGRAPH_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set; generate with: openssl rand -base64 32}
+      CLOUDGRAPH_JWT_EXPIRY: ${JWT_EXPIRY:-3600}
     volumes:
       # Mount source code for development (enables hot reload with --reload flag)
-      - ./arguscloud:/app/arguscloud:ro
+      - ./cloudgraph:/app/cloudgraph:ro
       - ./awshound:/app/awshound:ro
       # Data persistence
       - api_data:/app/data
@@ -78,16 +78,16 @@ services:
       retries: 5
       start_period: 20s
     networks:
-      - arguscloud
+      - cloudgraph
 
   # ============================================================================
-  # ArgusCloud UI (Static Web Interface)
+  # CloudGraph UI (Static Web Interface)
   # ============================================================================
   ui:
     build:
       context: ./ui
       dockerfile: Dockerfile
-    container_name: arguscloud-ui
+    container_name: cloudgraph-ui
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -105,7 +105,7 @@ services:
       timeout: 5s
       retries: 3
     networks:
-      - arguscloud
+      - cloudgraph
 
 # ==============================================================================
 # Volumes
@@ -122,5 +122,5 @@ volumes:
 # Networks
 # ==============================================================================
 networks:
-  arguscloud:
+  cloudgraph:
     driver: bridge

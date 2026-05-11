@@ -1,4 +1,4 @@
-"""Security tests for ArgusCloud.
+"""Security tests for CloudGraph.
 
 These tests verify security controls including:
 - Cypher injection prevention

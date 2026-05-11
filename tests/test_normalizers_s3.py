@@ -1,8 +1,8 @@
-"""Tests for arguscloud.normalizers.aws.s3 module."""
+"""Tests for cloudgraph.normalizers.aws.s3 module."""
 
 import pytest
-from arguscloud.normalizers.aws.s3 import normalize_s3
-from arguscloud.core.graph import CloudProvider
+from cloudgraph.normalizers.aws.s3 import normalize_s3
+from cloudgraph.core.graph import CloudProvider
 
 
 class TestNormalizeS3:

@@ -1,8 +1,8 @@
-"""Tests for arguscloud.normalizers.aws.org module (AWS Organizations)."""
+"""Tests for cloudgraph.normalizers.aws.org module (AWS Organizations)."""
 
 import pytest
-from arguscloud.normalizers.aws.org import normalize_organizations
-from arguscloud.core.graph import CloudProvider
+from cloudgraph.normalizers.aws.org import normalize_organizations
+from cloudgraph.core.graph import CloudProvider
 
 
 class TestNormalizeOrganizations:

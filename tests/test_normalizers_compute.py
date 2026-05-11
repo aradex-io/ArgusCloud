@@ -1,12 +1,12 @@
-"""Tests for arguscloud.normalizers.aws.compute module (Lambda, EKS, ECR)."""
+"""Tests for cloudgraph.normalizers.aws.compute module (Lambda, EKS, ECR)."""
 
 import pytest
-from arguscloud.normalizers.aws.compute import (
+from cloudgraph.normalizers.aws.compute import (
     normalize_lambda,
     normalize_eks,
     normalize_ecr,
 )
-from arguscloud.core.graph import CloudProvider
+from cloudgraph.core.graph import CloudProvider
 
 
 class TestNormalizeLambda:

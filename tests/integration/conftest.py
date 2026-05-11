@@ -110,8 +110,8 @@ def test_app(neo4j_container: Any) -> Generator[Any, None, None]:
     Yields:
         Flask test client
     """
-    from arguscloud.api.server import create_app
-    from arguscloud.api.auth import AuthConfig
+    from cloudgraph.api.server import create_app
+    from cloudgraph.api.auth import AuthConfig
 
     uri = neo4j_container.get_connection_url()
 
@@ -138,8 +138,8 @@ def test_app_with_auth(neo4j_container: Any) -> Generator[Any, None, None]:
     Yields:
         Tuple of (Flask test client, API key, key hash)
     """
-    from arguscloud.api.server import create_app
-    from arguscloud.api.auth import AuthConfig, generate_api_key
+    from cloudgraph.api.server import create_app
+    from cloudgraph.api.auth import AuthConfig, generate_api_key
 
     uri = neo4j_container.get_connection_url()
 

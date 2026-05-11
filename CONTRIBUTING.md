@@ -1,6 +1,6 @@
-# Contributing to ArgusCloud
+# Contributing to CloudGraph
 
-Thank you for your interest in contributing to ArgusCloud! This document provides guidelines and instructions for contributing.
+Thank you for your interest in contributing to CloudGraph! This document provides guidelines and instructions for contributing.
 
 ## Table of Contents
 
@@ -23,8 +23,8 @@ Thank you for your interest in contributing to ArgusCloud! This document provide
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/jeremylaratro/arguscloud.git
-   cd arguscloud
+   git clone https://github.com/jeremylaratro/cloudgraph.git
+   cd cloudgraph
    ```
 
 2. **Create a virtual environment:**
@@ -59,11 +59,11 @@ Thank you for your interest in contributing to ArgusCloud! This document provide
 Create a `.env` file for local development:
 
 ```bash
-ARGUSCLOUD_NEO4J_URI=bolt://localhost:7687
-ARGUSCLOUD_NEO4J_USER=neo4j
-ARGUSCLOUD_NEO4J_PASSWORD=password
-ARGUSCLOUD_AUTH_ENABLED=false
-ARGUSCLOUD_LOG_LEVEL=DEBUG
+CLOUDGRAPH_NEO4J_URI=bolt://localhost:7687
+CLOUDGRAPH_NEO4J_USER=neo4j
+CLOUDGRAPH_NEO4J_PASSWORD=password
+CLOUDGRAPH_AUTH_ENABLED=false
+CLOUDGRAPH_LOG_LEVEL=DEBUG
 ```
 
 ## Code Style
@@ -72,21 +72,21 @@ ARGUSCLOUD_LOG_LEVEL=DEBUG
 
 We use the following tools to maintain code quality:
 
-- **Ruff** for linting: `ruff check arguscloud/`
-- **Black** for formatting: `black arguscloud/`
-- **isort** for import sorting: `isort arguscloud/`
+- **Ruff** for linting: `ruff check cloudgraph/`
+- **Black** for formatting: `black cloudgraph/`
+- **isort** for import sorting: `isort cloudgraph/`
 
 Run all checks before committing:
 ```bash
-ruff check arguscloud/ tests/
-black --check arguscloud/ tests/
+ruff check cloudgraph/ tests/
+black --check cloudgraph/ tests/
 ```
 
 ### Type Hints
 
 - Type hints are **required** for all public functions and methods
 - Use `typing` module for complex types
-- Run `mypy arguscloud/` to check type correctness
+- Run `mypy cloudgraph/` to check type correctness
 
 ```python
 # Good
@@ -122,7 +122,7 @@ def collect_iam_roles(session: boto3.Session) -> Tuple[str, List[Dict]]:
 
 - Keep functions focused and under 50 lines when possible
 - Use meaningful variable names
-- Avoid magic numbers - use constants from `arguscloud/constants.py`
+- Avoid magic numbers - use constants from `cloudgraph/constants.py`
 - Handle errors explicitly - no bare `except:` clauses
 
 ## Testing Requirements
@@ -134,7 +134,7 @@ def collect_iam_roles(session: boto3.Session) -> Tuple[str, List[Dict]]:
 pytest
 
 # Run with coverage
-pytest --cov=arguscloud --cov-report=html
+pytest --cov=cloudgraph --cov-report=html
 
 # Run specific test file
 pytest tests/test_api_server.py
@@ -150,7 +150,7 @@ pytest -k "test_health"
    - Integration tests for API endpoints
 
 2. **Maintain >80% code coverage**
-   - Check coverage: `pytest --cov=arguscloud`
+   - Check coverage: `pytest --cov=cloudgraph`
 
 3. **Test naming convention:**
    ```python
@@ -205,8 +205,8 @@ tests/
 
 4. **Run linting:**
    ```bash
-   ruff check arguscloud/ tests/
-   black --check arguscloud/ tests/
+   ruff check cloudgraph/ tests/
+   black --check cloudgraph/ tests/
    ```
 
 5. **Update documentation if needed**
@@ -273,7 +273,7 @@ test(api): add integration tests for profile endpoints
 ### Bug Reports
 
 Include:
-- ArgusCloud version
+- CloudGraph version
 - Python version
 - Operating system
 - Steps to reproduce
@@ -294,10 +294,10 @@ See [SECURITY.md](SECURITY.md) for reporting instructions.
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/jeremylaratro/arguscloud/discussions) for questions
+- Open a [Discussion](https://github.com/jeremylaratro/cloudgraph/discussions) for questions
 - Check existing issues before creating new ones
 - Join our community chat (if available)
 
 ---
 
-Thank you for contributing to ArgusCloud!
+Thank you for contributing to CloudGraph!

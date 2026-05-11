@@ -1,4 +1,4 @@
-# ArgusCloud — Contributor & AI Assistant Guidelines
+# CloudGraph — Contributor & AI Assistant Guidelines
 
 This file is read by Claude Code (and other AI coding assistants) at the start of every session in this repository. Human contributors should follow the same rules.
 

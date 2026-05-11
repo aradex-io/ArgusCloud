@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# ArgusCloud Startup Script
+# CloudGraph Startup Script
 # Usage: ./start.sh [dev|prod]
 #
 set -euo pipefail
@@ -221,7 +221,7 @@ wait_for_services() {
     # Wait for Neo4j
     echo -n "  Neo4j: "
     while [ $attempt -le $max_attempts ]; do
-        if docker exec arguscloud-neo4j wget -q --spider http://localhost:7474 2>/dev/null; then
+        if docker exec cloudgraph-neo4j wget -q --spider http://localhost:7474 2>/dev/null; then
             echo -e "${GREEN}Ready${NC}"
             break
         fi
@@ -274,8 +274,8 @@ show_access_info() {
 
     print_section "Access Information"
 
-    echo -e "  ${BOLD}ArgusCloud UI:${NC}      ${GREEN}http://localhost:8080${NC}"
-    echo -e "  ${BOLD}ArgusCloud API:${NC}     ${GREEN}http://localhost:9847${NC}"
+    echo -e "  ${BOLD}CloudGraph UI:${NC}      ${GREEN}http://localhost:8080${NC}"
+    echo -e "  ${BOLD}CloudGraph API:${NC}     ${GREEN}http://localhost:9847${NC}"
     echo -e "  ${BOLD}API Health Check:${NC}   ${GREEN}http://localhost:9847/health${NC}"
 
     if [ "$mode" == "dev" ]; then
@@ -296,7 +296,7 @@ show_next_steps() {
 
     echo -e "  ${BOLD}2. Collect AWS Data:${NC}"
     echo -e "     Using the CLI:"
-    echo -e "     ${CYAN}arguscloud collect --profile your-aws-profile${NC}"
+    echo -e "     ${CYAN}cloudgraph collect --profile your-aws-profile${NC}"
     echo ""
     echo -e "     Or via the UI:"
     echo -e "     Go to Data Management → Enter AWS credentials"
@@ -342,7 +342,7 @@ show_documentation() {
 }
 
 show_help() {
-    echo "ArgusCloud Startup Script"
+    echo "CloudGraph Startup Script"
     echo ""
     echo "Usage: $0 [OPTIONS] [MODE]"
     echo ""
@@ -454,7 +454,7 @@ main() {
     show_next_steps "$mode"
     show_documentation
 
-    echo -e "${GREEN}${BOLD}ArgusCloud is ready!${NC}"
+    echo -e "${GREEN}${BOLD}CloudGraph is ready!${NC}"
     echo ""
 }
 

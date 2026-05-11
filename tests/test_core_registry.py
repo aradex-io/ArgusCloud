@@ -1,7 +1,7 @@
-"""Tests for arguscloud.core.registry module."""
+"""Tests for cloudgraph.core.registry module."""
 
 import pytest
-from arguscloud.core.registry import (
+from cloudgraph.core.registry import (
     BaseRegistry,
     CollectorRegistry,
     NormalizerRegistry,

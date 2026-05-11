@@ -1,4 +1,4 @@
-"""Tests for arguscloud.api.collect module.
+"""Tests for cloudgraph.api.collect module.
 
 This module tests collection job management including job creation,
 status tracking, cancellation, and the collection workflow.
@@ -12,7 +12,7 @@ import time
 from unittest.mock import MagicMock, patch
 from typing import List
 
-from arguscloud.api.collect import (
+from cloudgraph.api.collect import (
     JobStatus,
     CollectionProgress,
     CollectionJob,
@@ -283,7 +283,7 @@ class TestGetJobManager:
 
     def test_get_job_manager_returns_instance(self):
         """Test get_job_manager returns a JobManager instance."""
-        with patch("arguscloud.api.collect._job_manager", None):
+        with patch("cloudgraph.api.collect._job_manager", None):
             manager = get_job_manager()
 
             assert manager is not None
@@ -291,7 +291,7 @@ class TestGetJobManager:
 
     def test_get_job_manager_returns_same_instance(self):
         """Test get_job_manager returns the same instance on multiple calls."""
-        with patch("arguscloud.api.collect._job_manager", None):
+        with patch("cloudgraph.api.collect._job_manager", None):
             manager1 = get_job_manager()
             manager2 = get_job_manager()
 

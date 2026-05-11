@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "arguscloud"
+name = "cloudgraph"
 version = "0.5.0"
 description = "Multi-cloud security graph analytics"
 readme = "README.md"
@@ -71,21 +71,21 @@ azure = [
     "azure-mgmt-storage>=21.0.0",
 ]
 all = [
-    "arguscloud[dev,prod,gcp,azure]",
+    "cloudgraph[dev,prod,gcp,azure]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/jeremylaratro/arguscloud"
-Documentation = "https://github.com/jeremylaratro/arguscloud#readme"
-Repository = "https://github.com/jeremylaratro/arguscloud.git"
-Issues = "https://github.com/jeremylaratro/arguscloud/issues"
+Homepage = "https://github.com/jeremylaratro/cloudgraph"
+Documentation = "https://github.com/jeremylaratro/cloudgraph#readme"
+Repository = "https://github.com/jeremylaratro/cloudgraph.git"
+Issues = "https://github.com/jeremylaratro/cloudgraph/issues"
 
 [project.scripts]
-arguscloud = "arguscloud.cli.main:main"
+cloudgraph = "cloudgraph.cli.main:main"
 awshound = "awshound.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["arguscloud*", "awshound*"]
+include = ["cloudgraph*", "awshound*"]
 
 [tool.black]
 line-length = 100
@@ -106,4 +106,4 @@ disallow_untyped_defs = true
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short --cov=arguscloud --cov=awshound --cov-report=term-missing --cov-fail-under=40"
+addopts = "-v --tb=short --cov=cloudgraph --cov=awshound --cov-report=term-missing --cov-fail-under=40"

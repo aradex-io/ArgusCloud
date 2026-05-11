@@ -1,4 +1,4 @@
-"""Security tests for ArgusCloud API.
+"""Security tests for CloudGraph API.
 
 These tests verify that security controls are properly implemented,
 including Cypher injection prevention, authentication, and input validation.
@@ -27,10 +27,10 @@ def mock_driver():
 @pytest.fixture
 def test_client(mock_driver):
     """Create a Flask test client with auth disabled."""
-    from arguscloud.api.server import create_app
-    from arguscloud.api.auth import AuthConfig
+    from cloudgraph.api.server import create_app
+    from cloudgraph.api.auth import AuthConfig
 
-    with patch("arguscloud.api.server.get_driver", return_value=mock_driver):
+    with patch("cloudgraph.api.server.get_driver", return_value=mock_driver):
         app = create_app(
             uri="bolt://localhost:7687",
             user="neo4j",
@@ -45,12 +45,12 @@ def test_client(mock_driver):
 @pytest.fixture
 def auth_test_client(mock_driver):
     """Create a Flask test client with auth enabled."""
-    from arguscloud.api.server import create_app
-    from arguscloud.api.auth import AuthConfig, generate_api_key
+    from cloudgraph.api.server import create_app
+    from cloudgraph.api.auth import AuthConfig, generate_api_key
 
     api_key, key_hash = generate_api_key(prefix="test")
 
-    with patch("arguscloud.api.server.get_driver", return_value=mock_driver):
+    with patch("cloudgraph.api.server.get_driver", return_value=mock_driver):
         app = create_app(
             uri="bolt://localhost:7687",
             user="neo4j",

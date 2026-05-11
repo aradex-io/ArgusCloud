@@ -1,9 +1,9 @@
-"""Tests for arguscloud.rules.aws.s3 module."""
+"""Tests for cloudgraph.rules.aws.s3 module."""
 
 import pytest
-from arguscloud.core.graph import Node, Severity
-from arguscloud.core.base import RuleContext
-from arguscloud.rules.aws.s3 import (
+from cloudgraph.core.graph import Node, Severity
+from cloudgraph.core.base import RuleContext
+from cloudgraph.rules.aws.s3 import (
     rule_public_s3,
     rule_s3_policy_allows_all,
     rule_s3_no_encryption,

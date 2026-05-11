@@ -1,4 +1,4 @@
-# Production Hardening Plan (ArgusCloud)
+# Production Hardening Plan (CloudGraph)
 
 ## Goals
 - Reliable, large-scale collection across orgs (100+ accounts) with throttling, retries, and resumability.

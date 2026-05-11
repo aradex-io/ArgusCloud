@@ -1,4 +1,4 @@
-"""Tests for arguscloud.cli.main module."""
+"""Tests for cloudgraph.cli.main module."""
 
 import pytest
 import json
@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from arguscloud.cli.main import (
+from cloudgraph.cli.main import (
     parse_args,
     main,
     cmd_normalize,
@@ -41,7 +41,7 @@ class TestParseArgs:
         args = parse_args(["collect"])
         assert args.command == "collect"
         assert args.provider == "aws"
-        assert args.output == "arguscloud-output"
+        assert args.output == "cloudgraph-output"
         assert args.mode == "fast"
         assert args.services is None
         assert args.profile is None
@@ -69,7 +69,7 @@ class TestParseArgs:
         """Test normalize command default values."""
         args = parse_args(["normalize"])
         assert args.command == "normalize"
-        assert args.input == "arguscloud-output"
+        assert args.input == "cloudgraph-output"
         assert args.output is None
 
     def test_normalize_command_with_options(self):
@@ -86,7 +86,7 @@ class TestParseArgs:
         """Test analyze command default values."""
         args = parse_args(["analyze"])
         assert args.command == "analyze"
-        assert args.input == "arguscloud-output"
+        assert args.input == "cloudgraph-output"
         assert args.rules is None
         assert args.severity is None
 
@@ -107,7 +107,7 @@ class TestParseArgs:
         """Test export command default values."""
         args = parse_args(["export"])
         assert args.command == "export"
-        assert args.input == "arguscloud-output"
+        assert args.input == "cloudgraph-output"
         assert args.format == "json"
         assert args.output is None
 
@@ -155,7 +155,7 @@ class TestParseArgs:
         """Test import command default values."""
         args = parse_args(["import"])
         assert args.command == "import"
-        assert args.input == "arguscloud-output"
+        assert args.input == "cloudgraph-output"
         assert args.neo4j_uri == "bolt://localhost:7687"
         assert args.clear is False
 
@@ -431,7 +431,7 @@ class TestCmdKeygen:
         assert result == 0
 
         captured = capsys.readouterr()
-        assert "ARGUSCLOUD_API_KEYS" in captured.out
+        assert "CLOUDGRAPH_API_KEYS" in captured.out
         assert "curl" in captured.out
         assert "X-API-Key" in captured.out
 

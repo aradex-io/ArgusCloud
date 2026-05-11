@@ -1,9 +1,9 @@
-"""Tests for arguscloud.rules.aws.data module."""
+"""Tests for cloudgraph.rules.aws.data module."""
 
 import pytest
-from arguscloud.core.graph import Node, Severity
-from arguscloud.core.base import RuleContext
-from arguscloud.rules.aws.data import (
+from cloudgraph.core.graph import Node, Severity
+from cloudgraph.core.base import RuleContext
+from cloudgraph.rules.aws.data import (
     rule_kms_public_access,
     rule_kms_no_rotation,
     rule_rds_public_snapshot,

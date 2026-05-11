@@ -1,4 +1,4 @@
-# ArgusCloud Domain Model & Architecture
+# CloudGraph Domain Model & Architecture
 
 ## Graph Schema (Nodes)
 - `OrgRoot`, `OrgUnit`, `Account`: org structure; include SCP links and delegated admins.

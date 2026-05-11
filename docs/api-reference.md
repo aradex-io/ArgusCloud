@@ -1,6 +1,6 @@
-# ArgusCloud API Reference
+# CloudGraph API Reference
 
-This document provides a complete reference for the ArgusCloud REST API.
+This document provides a complete reference for the CloudGraph REST API.
 
 ## Base URL
 
@@ -731,7 +731,7 @@ X-RateLimit-Reset: 1642680000
 The full OpenAPI 3.0 specification is available programmatically:
 
 ```python
-from arguscloud.api.openapi import get_openapi_spec
+from cloudgraph.api.openapi import get_openapi_spec
 spec = get_openapi_spec()
 ```
 

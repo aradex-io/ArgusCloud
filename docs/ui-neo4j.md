@@ -1,9 +1,9 @@
-# ArgusCloud UI with Neo4j API
+# CloudGraph UI with Neo4j API
 
 ## Run Neo4j
 ```bash
 sudo docker run -d \
-  --name arguscloud-neo4j \
+  --name cloudgraph-neo4j \
   -p 7474:7474 -p 7687:7687 \
   -e NEO4J_AUTH=neo4j/letmein123 \
   -v "$(pwd)/neo4j/data":/data \

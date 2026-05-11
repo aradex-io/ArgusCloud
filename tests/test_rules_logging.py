@@ -1,9 +1,9 @@
-"""Tests for arguscloud.rules.aws.logging module."""
+"""Tests for cloudgraph.rules.aws.logging module."""
 
 import pytest
-from arguscloud.core.graph import Node, Severity
-from arguscloud.core.base import RuleContext
-from arguscloud.rules.aws.logging import (
+from cloudgraph.core.graph import Node, Severity
+from cloudgraph.core.base import RuleContext
+from cloudgraph.rules.aws.logging import (
     rule_missing_cloudtrail,
     rule_cloudtrail_not_logging,
     rule_missing_guardduty,
