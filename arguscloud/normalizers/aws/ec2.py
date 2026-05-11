@@ -215,6 +215,7 @@ def normalize_vpc(records: Iterable[Dict[str, Any]]) -> GraphData:
                     ingress = sg.get("IpPermissions", [])
                     has_open_ingress = any(
                         any(r.get("CidrIp") == "0.0.0.0/0" for r in rule.get("IpRanges", []))
+                        or any(r.get("CidrIpv6") == "::/0" for r in rule.get("Ipv6Ranges", []))
                         for rule in ingress
                     )
 

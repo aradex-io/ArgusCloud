@@ -205,6 +205,47 @@ class TestRulePublicAmi:
         assert result.passed is True
 
 
+class TestRuleOpenSgIpv6:
+    """H-12: Security group open via IPv6 ::/0 should trigger the rule."""
+
+    def test_ipv6_open_sg_detected_via_normalizer_flag(self):
+        """SG with has_open_ingress=True (set by normalizer from Ipv6Ranges) triggers rule."""
+        nodes = [
+            Node(
+                id="sg-ipv6",
+                type="SecurityGroup",
+                properties={"name": "ipv6-only-sg", "has_open_ingress": True},
+            )
+        ]
+        ctx = RuleContext(nodes=nodes, edges=[])
+        result = rule_open_security_group(ctx)
+        assert result.passed is False
+        assert result.finding_count == 1
+
+    def test_legacy_rule_open_sg_ipv6(self):
+        """Legacy rule_open_sg detects ::/0 in Ipv6Ranges directly."""
+        from awshound.graph import Node as LegacyNode
+        from awshound import rules as legacy_rules
+
+        sg = LegacyNode(
+            id="sg-ipv6-legacy",
+            type="SecurityGroup",
+            properties={
+                "ingress": [
+                    {
+                        "IpProtocol": "-1",
+                        "IpRanges": [],
+                        "Ipv6Ranges": [{"CidrIpv6": "::/0"}],
+                    }
+                ]
+            },
+        )
+        result_edges = legacy_rules.evaluate_rules([sg], [])
+        assert any(e.properties.get("rule") == "open-sg" for e in result_edges), (
+            "Legacy engine must detect ::/0 in Ipv6Ranges"
+        )
+
+
 class TestRuleUnencryptedSnapshot:
     """Tests for the unencrypted snapshot rule."""
 

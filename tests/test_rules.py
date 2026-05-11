@@ -72,10 +72,11 @@ def test_rule_kms_external_access():
 
 
 def test_rule_public_snapshot_ami():
+    # M-12: rule was renamed from snapshot-exfil to snapshot-unencrypted
     snap = Node(id="snap-1", type="Snapshot", properties={"state": "completed", "encrypted": False})
     ami = Node(id="ami-1", type="AMI", properties={"public": True})
     result_edges = rules.evaluate_rules([snap, ami], [])
-    assert any(e.properties.get("rule") == "snapshot-exfil" for e in result_edges)
+    assert any(e.properties.get("rule") == "snapshot-unencrypted" for e in result_edges)
     assert any(e.properties.get("rule") == "ami-public" for e in result_edges)
 
 
