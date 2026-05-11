@@ -17,6 +17,10 @@ from neo4j import GraphDatabase
 FlaskResponse = Union[Response, Tuple[Response, int], Tuple[Dict[str, Any], int]]
 
 from .auth import AuthConfig, init_auth, require_auth
+from .errors import handle_api_errors
+from .metrics import init_metrics
+from .shutdown import init_graceful_shutdown
+from .ratelimit import init_rate_limiting, HAS_LIMITER
 from ..plugins import PluginRegistry, discover_plugins, load_plugins
 from ..plugins.registry import get_registry
 
@@ -130,6 +134,15 @@ def create_app(
 
     # Initialize authentication
     init_auth(app, auth_config)
+
+    # Register standardized error handlers (H-16 / C-06)
+    handle_api_errors(app)
+
+    # Initialize Prometheus metrics (registers /metrics endpoint and request hooks)
+    init_metrics(app)
+
+    # Initialize graceful shutdown (registers /ready endpoint and signal handlers)
+    init_graceful_shutdown(app, driver=driver)
 
     # Initialize plugin system
     registry = get_registry()
@@ -907,6 +920,14 @@ def create_app(
             "jobs": [j.to_dict() for j in jobs],
             "count": len(jobs)
         })
+
+    # Initialize rate limiting after all routes are registered (C-06)
+    if not HAS_LIMITER:
+        logger.warning(
+            "Rate limiting not available — install flask-limiter[redis] via the [prod] extra. "
+            "API endpoints are currently unrestricted."
+        )
+    init_rate_limiting(app)
 
     return app
 

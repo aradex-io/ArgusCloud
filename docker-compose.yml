@@ -61,7 +61,7 @@ services:
       ARGUSCLOUD_CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000}
       # JWT settings (only needed if auth enabled)
       ARGUSCLOUD_JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set; generate with: openssl rand -base64 32}
-      ARGUSCLOUD_JWT_EXPIRY: ${JWT_EXPIRY:-86400}
+      ARGUSCLOUD_JWT_EXPIRY: ${JWT_EXPIRY:-3600}
     volumes:
       # Mount source code for development (enables hot reload with --reload flag)
       - ./arguscloud:/app/arguscloud:ro

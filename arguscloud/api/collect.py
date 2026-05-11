@@ -146,13 +146,16 @@ class JobManager:
 
 # Global job manager
 _job_manager: Optional[JobManager] = None
+_job_manager_lock = threading.Lock()
 
 
 def get_job_manager() -> JobManager:
-    """Get the global job manager instance."""
+    """Get the global job manager instance (thread-safe double-checked locking)."""
     global _job_manager
     if _job_manager is None:
-        _job_manager = JobManager()
+        with _job_manager_lock:
+            if _job_manager is None:
+                _job_manager = JobManager()
     return _job_manager
 
 
