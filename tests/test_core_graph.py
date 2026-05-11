@@ -465,10 +465,11 @@ class TestNodeEdgeCases:
         assert restored.properties["nested"]["a"]["b"] == "c"
 
     def test_node_with_empty_strings(self):
-        """Test node with empty string values."""
-        node = Node(id="", type="")
-        assert node.id == ""
-        assert node.type == ""
+        """Test that Node rejects empty id or type strings (L-05 validation)."""
+        with pytest.raises(ValueError, match="Node.id must be a non-empty string"):
+            Node(id="", type="SomeType")
+        with pytest.raises(ValueError, match="Node.type must be a non-empty string"):
+            Node(id="valid-id", type="")
 
     def test_node_with_special_characters(self):
         """Test node with special characters in ID."""
