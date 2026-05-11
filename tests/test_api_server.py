@@ -423,13 +423,14 @@ class TestCORSHeaders:
         session = mock_driver.session.return_value.__enter__.return_value
         session.run.return_value.single.return_value = True
 
-        response = client_no_auth.get("/health")
+        # Must send an allowed Origin — security-correct CORS only echoes
+        # Access-Control-Allow-Origin for known origins, not on bare requests.
+        response = client_no_auth.get("/health", headers={"Origin": "http://localhost:8080"})
         assert response.status_code == 200
-        # CORS uses specific origins, not wildcard - verify header exists
+        # CORS uses specific origins, not wildcard - verify header is set for allowed origin
         cors_origin = response.headers.get("Access-Control-Allow-Origin")
         assert cors_origin is not None
-        # Should be a specific origin (not '*') or the default allowed origin
-        assert cors_origin in ["http://localhost:8080", "http://127.0.0.1:8080"] or cors_origin != "*"
+        assert cors_origin == "http://localhost:8080"
         assert "Content-Type" in response.headers.get("Access-Control-Allow-Headers", "")
         assert "Authorization" in response.headers.get("Access-Control-Allow-Headers", "")
         assert "X-API-Key" in response.headers.get("Access-Control-Allow-Headers", "")
