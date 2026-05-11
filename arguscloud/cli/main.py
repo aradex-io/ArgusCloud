@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import List, Optional
@@ -178,8 +179,8 @@ Examples:
     )
     serve_parser.add_argument(
         "--neo4j-password",
-        default="letmein123",
-        help="Neo4j password"
+        default=None,
+        help="Neo4j password (required; also settable via NEO4J_PASSWORD env var)"
     )
     serve_parser.add_argument(
         "--no-auth",
@@ -206,8 +207,8 @@ Examples:
     )
     import_parser.add_argument(
         "--neo4j-password",
-        default="letmein123",
-        help="Neo4j password"
+        default=None,
+        help="Neo4j password (required; also settable via NEO4J_PASSWORD env var)"
     )
     import_parser.add_argument(
         "--clear",
@@ -444,6 +445,11 @@ def cmd_serve(args: argparse.Namespace) -> int:
     from arguscloud.api import create_app
     from arguscloud.api.auth import AuthConfig
 
+    password = args.neo4j_password or os.environ.get("NEO4J_PASSWORD")
+    if not password:
+        print("ERROR: Neo4j password is required. Use --neo4j-password or set NEO4J_PASSWORD.")
+        return 1
+
     auth_config = None
     if args.no_auth:
         auth_config = AuthConfig(enabled=False)
@@ -451,7 +457,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     app = create_app(
         args.neo4j_uri,
         args.neo4j_user,
-        args.neo4j_password,
+        password,
         auth_config
     )
 
@@ -477,6 +483,11 @@ def cmd_import(args: argparse.Namespace) -> int:
     """Execute the import command."""
     from neo4j import GraphDatabase
 
+    password = args.neo4j_password or os.environ.get("NEO4J_PASSWORD")
+    if not password:
+        print("ERROR: Neo4j password is required. Use --neo4j-password or set NEO4J_PASSWORD.")
+        return 1
+
     input_dir = Path(args.input)
 
     print(f"Importing data from {input_dir} to Neo4j...")
@@ -492,7 +503,7 @@ def cmd_import(args: argparse.Namespace) -> int:
 
     driver = GraphDatabase.driver(
         args.neo4j_uri,
-        auth=(args.neo4j_user, args.neo4j_password)
+        auth=(args.neo4j_user, password)
     )
 
     node_count = 0

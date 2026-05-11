@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, field_validator
 # Validation patterns
 PROFILE_NAME_PATTERN = re.compile(r'^[a-zA-Z0-9_\-\.]{1,100}$')
 AWS_ACCESS_KEY_PATTERN = re.compile(r'^A[KS]IA[0-9A-Z]{16}$')
+AWS_REGION_PATTERN = re.compile(r'^[a-z]{2,}-[a-z]+-\d+$')
 
 
 class ProfileRequest(BaseModel):
@@ -67,6 +68,13 @@ class CollectAWSRequest(BaseModel):
     region: str = Field(default="us-east-1", max_length=30)
     services: List[str] = Field(default_factory=list)
     profile_name: Optional[str] = Field(default=None, max_length=100)
+
+    @field_validator("region")
+    @classmethod
+    def validate_region(cls, v: str) -> str:
+        if not AWS_REGION_PATTERN.match(v):
+            raise ValueError("invalid region format")
+        return v
 
     @field_validator("access_key")
     @classmethod

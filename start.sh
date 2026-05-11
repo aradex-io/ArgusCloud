@@ -21,8 +21,8 @@ ENV_EXAMPLE="${SCRIPT_DIR}/.env.example"
 
 # Default values for development
 DEFAULT_NEO4J_USER="neo4j"
-DEFAULT_NEO4J_PASSWORD="letmein123"
-DEFAULT_AUTH_ENABLED="false"
+DEFAULT_NEO4J_PASSWORD=""  # No default — must be set explicitly
+DEFAULT_AUTH_ENABLED="true"
 DEFAULT_JWT_SECRET="dev-secret-change-in-production"
 DEFAULT_CORS_ORIGINS="http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000"
 DEFAULT_LOG_LEVEL="DEBUG"
@@ -280,7 +280,7 @@ show_access_info() {
 
     if [ "$mode" == "dev" ]; then
         echo -e "  ${BOLD}Neo4j Browser:${NC}      ${GREEN}http://localhost:7474${NC}"
-        echo -e "  ${BOLD}Neo4j Credentials:${NC}  ${NEO4J_USER:-neo4j} / ${NEO4J_PASSWORD:-letmein123}"
+        echo -e "  ${BOLD}Neo4j Credentials:${NC}  ${NEO4J_USER:-neo4j} / (set via NEO4J_PASSWORD)"
     fi
 }
 

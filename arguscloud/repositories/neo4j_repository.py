@@ -7,6 +7,7 @@ operations, encapsulating all Cypher queries and Neo4j-specific logic.
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -15,6 +16,58 @@ from neo4j import Driver
 from arguscloud.repositories.base import GraphRepository, NodeFilter, ProfileData
 
 logger = logging.getLogger(__name__)
+
+# Allowlist of valid Cypher relationship types used in the codebase.
+# Defense-in-depth: validated by regex AND membership check before interpolation.
+_EDGE_TYPE_REGEX = re.compile(r'^[A-Z][A-Z0-9_]{0,59}$')
+
+VALID_EDGE_TYPES: frozenset = frozenset({
+    # IAM / identity relationships
+    "TRUSTS",
+    "ATTACHED_POLICY",
+    "ATTACHED_INLINE_POLICY",
+    "MEMBER_OF",
+    "HAS_INSTANCE_PROFILE",
+    # EC2 / network topology
+    "IN_SUBNET",
+    "IN_VPC",
+    "MEMBER_OF_SECURITY_GROUP",
+    "CONTAINS",
+    "ROUTE_TABLE",
+    "VPC_PEERING",
+    "VPC_ENDPOINT",
+    # Resource policy / principal relationships
+    "RESOURCE_POLICY",
+    "POLICY_PRINCIPAL",
+    # Cross-resource relationships
+    "ASSUMES_ROLE",
+    "ATTACK_PATH",
+    "RELATES_TO",
+    # Normalizer-produced edge types (camel-case aliases kept for compatibility)
+    "AttachedPolicy",
+    "AttachedInlinePolicy",
+    "Trusts",
+    "MemberOf",
+    "HasInstanceProfile",
+    "InSubnet",
+    "InVPC",
+    "MemberOfSecurityGroup",
+    "Contains",
+    "ResourcePolicy",
+    "PolicyPrincipal",
+    "AssumesRole",
+    "AttackPath",
+    "RelatesTo",
+    "VPCPeering",
+    "VPCEndpoint",
+    "RouteTable",
+    "OrgRoot",
+    "ServiceControlPolicy",
+    "OrganizationalUnit",
+    "Account",
+    # Relationship used in server.py edge persistence
+    "REL",
+})
 
 
 class Neo4jGraphRepository(GraphRepository):
@@ -441,6 +494,15 @@ class Neo4jGraphRepository(GraphRepository):
             edge_count = 0
             for edge in edges:
                 edge_type = edge.get("type", "RELATES_TO")
+                # Defense-in-depth: regex guard then strict allowlist
+                if not _EDGE_TYPE_REGEX.match(edge_type):
+                    raise ValueError(
+                        f"invalid edge type (format): {edge_type!r}"
+                    )
+                if edge_type not in VALID_EDGE_TYPES:
+                    raise ValueError(
+                        f"invalid edge type: {edge_type!r}"
+                    )
                 edge_query = f"""
                 MATCH (a {{id: $src}}), (b {{id: $dst}})
                 MERGE (a)-[r:{edge_type}]->(b)

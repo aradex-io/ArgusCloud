@@ -23,6 +23,8 @@ from flask import request, jsonify, g, current_app
 DEFAULT_API_KEY_LENGTH = 32
 DEFAULT_JWT_EXPIRY = 3600  # 1 hour
 JWT_ALGORITHM = "HS256"
+JWT_ISSUER = "arguscloud"
+JWT_AUDIENCE = "arguscloud-api"
 
 
 def generate_api_key(prefix: str = "ch") -> Tuple[str, str]:
@@ -65,6 +67,8 @@ def create_jwt_token(
     now = datetime.now(timezone.utc)
     token_payload["exp"] = now + timedelta(seconds=expiry_seconds)
     token_payload["iat"] = now
+    token_payload["iss"] = JWT_ISSUER
+    token_payload["aud"] = JWT_AUDIENCE
 
     return jwt.encode(token_payload, secret, algorithm=JWT_ALGORITHM)
 
@@ -85,7 +89,9 @@ def verify_jwt_token(token: str, secret: str) -> Optional[Dict[str, Any]]:
             token,
             secret,
             algorithms=[JWT_ALGORITHM],
-            options={"require": ["exp", "iat"]}
+            audience=JWT_AUDIENCE,
+            issuer=JWT_ISSUER,
+            options={"require": ["exp", "iat", "iss", "aud"]}
         )
         return payload
     except jwt.ExpiredSignatureError:
