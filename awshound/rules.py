@@ -67,6 +67,10 @@ def rule_public_s3(ctx: RuleContext) -> RuleResult:
     for node in ctx.nodes:
         if node.type != "ResourcePolicy":
             continue
+        # M-08: skip KMS resource policies — handled exclusively by rule_kms_external_access
+        node_id_lower = node.id.lower()
+        if "kms" in node_id_lower or ":key/" in node.id:
+            continue
         doc = node.properties.get("document") or {}
         stmts = doc.get("Statement") or []
         if not isinstance(stmts, list):
@@ -81,7 +85,7 @@ def rule_public_s3(ctx: RuleContext) -> RuleResult:
                         src=node.id,
                         dst="internet",
                         type="AttackPath",
-                        properties={"rule": "public-s3", "description": "S3/KMS resource policy allows everyone", "severity": "high"},
+                        properties={"rule": "public-s3", "description": "S3 resource policy allows everyone", "severity": "high"},
                     )
                 )
                 break
@@ -95,16 +99,15 @@ def rule_open_sg(ctx: RuleContext) -> RuleResult:
             continue
         ingress = node.properties.get("ingress") or []
         for perm in ingress:
-            cidrs = []
-            for rng in perm.get("IpRanges", []):
-                cidrs.append(rng.get("CidrIp"))
-            if "0.0.0.0/0" in cidrs:
+            cidrs_v4 = [rng.get("CidrIp") for rng in perm.get("IpRanges", [])]
+            cidrs_v6 = [rng.get("CidrIpv6") for rng in perm.get("Ipv6Ranges", [])]
+            if "0.0.0.0/0" in cidrs_v4 or "::/0" in cidrs_v6:
                 attack_edges.append(
                     Edge(
                         src=node.id,
                         dst="internet",
                         type="AttackPath",
-                        properties={"rule": "open-sg", "description": "Security group allows ingress from 0.0.0.0/0", "severity": "medium"},
+                        properties={"rule": "open-sg", "description": "Security group allows ingress from 0.0.0.0/0 or ::/0", "severity": "medium"},
                     )
                 )
                 break
@@ -121,7 +124,7 @@ def rule_missing_cloudtrail(ctx: RuleContext) -> RuleResult:
                     src=acct.id,
                     dst="cloudtrail:absent",
                     type="AttackPath",
-                    properties={"rule": "cloudtrail-missing", "description": "CloudTrail trail not found or not logging", "severity": "medium"},
+                    properties={"rule": "cloudtrail-missing", "description": "CloudTrail trail not found or not logging", "severity": "high"},
                 )
             )
     return RuleResult(rule_id="cloudtrail-missing", description="CloudTrail missing", edges=attack_edges)
@@ -176,6 +179,13 @@ def rule_kms_external_access(ctx: RuleContext) -> RuleResult:
                         principals = [val]
                     for p in principals:
                         if ":iam::" in str(p):
+                            # M-09: skip same-account principals
+                            # Key ARN format: arn:aws:kms:{region}:{account}:key/{id}
+                            # Principal ARN format: arn:aws:iam::{account}:role/...
+                            key_account = node.id.split(":")[4] if node.id.count(":") >= 4 else ""
+                            principal_account = str(p).split(":")[4] if str(p).count(":") >= 4 else ""
+                            if key_account and principal_account and key_account == principal_account:
+                                continue
                             attack_edges.append(
                                 Edge(
                                     src=node.id,
@@ -245,6 +255,9 @@ def rule_assume_role_chain(ctx: RuleContext) -> RuleResult:
     return RuleResult(rule_id="assume-role-chain", description="Assume role chain to admin", edges=attack_edges)
 
 
+_SENSITIVE_KEYWORDS = {"SECRET", "PASSWORD", "KEY", "TOKEN", "CREDENTIAL", "API_KEY"}
+
+
 def rule_codebuild_secret_exfil(ctx: RuleContext) -> RuleResult:
     attack_edges: List[Edge] = []
     for node in ctx.nodes:
@@ -252,13 +265,18 @@ def rule_codebuild_secret_exfil(ctx: RuleContext) -> RuleResult:
             continue
         env_vars = node.properties.get("environment_vars") or []
         privileged = node.properties.get("environment_privileged")
-        if env_vars:
+        # H-13: only fire on env vars whose name contains a sensitive keyword
+        suspicious = [
+            v for v in env_vars
+            if any(kw in v.get("name", "").upper() for kw in _SENSITIVE_KEYWORDS)
+        ]
+        if suspicious:
             attack_edges.append(
                 Edge(
                     src=node.id,
                     dst="codebuild:envvars",
                     type="AttackPath",
-                    properties={"rule": "codebuild-env-secrets", "description": "CodeBuild project has environment variables (potential secrets)", "severity": "medium"},
+                    properties={"rule": "codebuild-env-secrets", "description": f"CodeBuild project has {len(suspicious)} potentially sensitive env var(s)", "severity": "medium"},
                 )
             )
         if privileged:
@@ -276,14 +294,24 @@ def rule_codebuild_secret_exfil(ctx: RuleContext) -> RuleResult:
 def rule_public_snapshots_amis(ctx: RuleContext) -> RuleResult:
     attack_edges: List[Edge] = []
     for node in ctx.nodes:
-        if node.type == "Snapshot" and node.properties.get("state") == "completed":
-            if node.properties.get("encrypted") is False:
+        if node.type == "Snapshot":
+            # M-12: separate public-snapshot from unencrypted-snapshot rules
+            if node.properties.get("is_public"):
                 attack_edges.append(
                     Edge(
                         src=node.id,
                         dst="internet",
                         type="AttackPath",
-                        properties={"rule": "snapshot-exfil", "description": "Unencrypted snapshot may be shareable/clonable", "severity": "medium"},
+                        properties={"rule": "snapshot-public", "description": "EC2 snapshot is publicly shared", "severity": "high"},
+                    )
+                )
+            if node.properties.get("state") == "completed" and node.properties.get("encrypted") is False:
+                attack_edges.append(
+                    Edge(
+                        src=node.id,
+                        dst="ec2:unencrypted",
+                        type="AttackPath",
+                        properties={"rule": "snapshot-unencrypted", "description": "Unencrypted snapshot may be shareable/clonable", "severity": "medium"},
                     )
                 )
         if node.type == "AMI":
@@ -349,19 +377,13 @@ def rule_cloudtrail_not_logging(ctx: RuleContext) -> RuleResult:
 
 
 def rule_codepipeline_risk(ctx: RuleContext) -> RuleResult:
-    attack_edges: List[Edge] = []
-    for node in ctx.nodes:
-        if node.type == "CodePipeline":
-            if node.properties.get("role_arn"):
-                attack_edges.append(
-                    Edge(
-                        src=node.id,
-                        dst=node.properties.get("role_arn"),
-                        type="AttackPath",
-                        properties={"rule": "codepipeline-role", "description": "Pipeline uses IAM role (review permissions for artifact access/exfil)", "severity": "medium"},
-                    )
-                )
-    return RuleResult(rule_id="codepipeline-risk", description="CodePipeline role risk", edges=attack_edges)
+    # H-13: Disabled — every valid CodePipeline has a role_arn (AWS requires it),
+    # so checking role_arn alone is pure noise. A proper check would verify
+    # whether the pipeline role has admin permissions (is_admin property on the
+    # Role node), but the existing edge graph does not carry that correlation
+    # through to CodePipeline nodes. Re-enable once admin-role detection is
+    # plumbed through the pipeline normalizer.
+    return RuleResult(rule_id="codepipeline-risk", description="CodePipeline role risk (disabled)", edges=[])
 
 
 def _principal_list(doc: dict) -> list:
@@ -405,6 +427,29 @@ def rule_ecr_cross_account(ctx: RuleContext) -> RuleResult:
     return RuleResult(rule_id="ecr-cross-account", description="ECR policy exposes repository", edges=attack_edges)
 
 
+def rule_rds_publicly_accessible(ctx: RuleContext) -> RuleResult:
+    """M-13: Flag RDS instances with PubliclyAccessible=True (CIS AWS 2.3.3)."""
+    attack_edges: List[Edge] = []
+    for node in ctx.nodes:
+        if node.type != "RDSInstance":
+            continue
+        if node.properties.get("publicly_accessible") is True:
+            attack_edges.append(
+                Edge(
+                    src=node.id,
+                    dst="internet",
+                    type="AttackPath",
+                    properties={
+                        "rule": "rds-publicly-accessible",
+                        "description": "RDS instance is publicly accessible (CIS 2.3.3)",
+                        "severity": "high",
+                        "remediation": "Set DBInstance.PubliclyAccessible to false; restrict access to private subnets or VPC peering.",
+                    },
+                )
+            )
+    return RuleResult(rule_id="rds-publicly-accessible", description="RDS instance publicly accessible", edges=attack_edges)
+
+
 RULES: List[RuleFn] = [
     rule_open_trust,
     rule_missing_guardduty,
@@ -418,6 +463,7 @@ RULES: List[RuleFn] = [
     rule_public_snapshots_amis,
     rule_ecr_cross_account,
     rule_rds_public_snapshots,
+    rule_rds_publicly_accessible,
     rule_imds_exposure,
     rule_cloudtrail_not_logging,
     rule_codepipeline_risk,

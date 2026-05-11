@@ -277,30 +277,25 @@ class TestNeo4jGraphRepository:
         repository: Neo4jGraphRepository,
         mock_session: MagicMock
     ):
-        """Test list_profiles returns profile metadata."""
-        # Mock profile query
+        """Test list_profiles returns profile metadata (single aggregating query — M-07)."""
+        # New implementation uses a single aggregating Cypher query that
+        # returns name, node_count, edge_count, and created_at in one round-trip.
         profile_record = MagicMock()
         profile_record.__getitem__ = lambda self, key: {
             "name": "test-profile",
             "node_count": 10,
+            "edge_count": 5,
             "created_at": "2024-01-01T00:00:00Z",
-            "updated_at": "2024-01-02T00:00:00Z"
         }.get(key)
 
-        # Mock edge count query
-        edge_record = MagicMock()
-        edge_record.__getitem__ = lambda self, key: {"edge_count": 5}.get(key)
-
-        mock_session.run.side_effect = [
-            [profile_record],  # First call for profiles
-            MagicMock(single=lambda: edge_record)  # Second call for edge count
-        ]
+        mock_session.run.return_value = [profile_record]
 
         profiles = repository.list_profiles()
 
         assert len(profiles) == 1
         assert profiles[0]["name"] == "test-profile"
         assert profiles[0]["node_count"] == 10
+        assert profiles[0]["edge_count"] == 5
 
     def test_get_profile_returns_profile_data(
         self,
@@ -365,12 +360,17 @@ class TestNeo4jGraphRepository:
         sample_nodes,
         sample_edges
     ):
-        """Test save_profile creates a new profile."""
+        """Test save_profile creates a new profile atomically (H-08)."""
         # Mock existence check - profile doesn't exist
         count_record = MagicMock()
         count_record.__getitem__ = lambda self, key: {"count": 0}.get(key)
 
         mock_session.run.return_value = MagicMock(single=lambda: count_record)
+
+        # execute_write calls _upsert_profile_atomic(tx, **kwargs); mock it to
+        # return the expected (node_count, edge_count) tuple so the unpacking
+        # in save_profile succeeds.
+        mock_session.execute_write.return_value = (len(sample_nodes), len(sample_edges))
 
         result = repository.save_profile(
             "new-profile",
@@ -383,6 +383,8 @@ class TestNeo4jGraphRepository:
         assert result["name"] == "new-profile"
         assert result["node_count"] == len(sample_nodes)
         assert result["edge_count"] == len(sample_edges)
+        # Verify that a write transaction was actually used (H-08 atomicity)
+        assert mock_session.execute_write.called
 
     def test_save_profile_raises_for_existing_in_create_mode(
         self,

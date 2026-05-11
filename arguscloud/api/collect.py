@@ -146,13 +146,16 @@ class JobManager:
 
 # Global job manager
 _job_manager: Optional[JobManager] = None
+_job_manager_lock = threading.Lock()
 
 
 def get_job_manager() -> JobManager:
-    """Get the global job manager instance."""
+    """Get the global job manager instance (thread-safe double-checked locking)."""
     global _job_manager
     if _job_manager is None:
-        _job_manager = JobManager()
+        with _job_manager_lock:
+            if _job_manager is None:
+                _job_manager = JobManager()
     return _job_manager
 
 
@@ -232,9 +235,9 @@ def run_collection_job(
             job.progress.nodes_collected = len(nodes)
             job.progress.edges_collected = len(edges)
         except Exception as e:
-            logger.error(f"Normalization failed: {e}")
+            logger.exception(f"Normalization failed: {e}")
             job.status = JobStatus.FAILED
-            job.error = f"Normalization failed: {str(e)}"
+            job.error = "normalization_failed"
             return
 
         # Analyze (run security rules)
@@ -258,9 +261,9 @@ def run_collection_job(
         try:
             _save_to_neo4j(driver, profile_name, nodes, edges)
         except Exception as e:
-            logger.error(f"Save failed: {e}")
+            logger.exception(f"Save failed: {e}")
             job.status = JobStatus.FAILED
-            job.error = f"Failed to save to database: {str(e)}"
+            job.error = "database_save_failed"
             return
 
         # Complete
@@ -271,7 +274,7 @@ def run_collection_job(
     except Exception as e:
         logger.exception(f"Collection job failed: {e}")
         job.status = JobStatus.FAILED
-        job.error = str(e)
+        job.error = "collection_failed"
     finally:
         # Ensure credentials are cleared
         try:

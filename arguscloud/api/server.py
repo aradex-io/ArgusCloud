@@ -8,14 +8,19 @@ import os
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import posixpath
+
 from flask import Flask, Response, jsonify, request, g
-from flask_cors import CORS
 from neo4j import GraphDatabase
 
 # Type alias for Flask responses
 FlaskResponse = Union[Response, Tuple[Response, int], Tuple[Dict[str, Any], int]]
 
 from .auth import AuthConfig, init_auth, require_auth
+from .errors import handle_api_errors
+from .metrics import init_metrics
+from .shutdown import init_graceful_shutdown
+from .ratelimit import init_rate_limiting, HAS_LIMITER
 from ..plugins import PluginRegistry, discover_plugins, load_plugins
 from ..plugins.registry import get_registry
 
@@ -126,10 +131,18 @@ def create_app(
     """
     driver = get_driver(uri, user, password)
     app = Flask(__name__)
-    CORS(app)
 
     # Initialize authentication
     init_auth(app, auth_config)
+
+    # Register standardized error handlers (H-16 / C-06)
+    handle_api_errors(app)
+
+    # Initialize Prometheus metrics (registers /metrics endpoint and request hooks)
+    init_metrics(app)
+
+    # Initialize graceful shutdown (registers /ready endpoint and signal handlers)
+    init_graceful_shutdown(app, driver=driver)
 
     # Initialize plugin system
     registry = get_registry()
@@ -143,16 +156,21 @@ def create_app(
     @app.after_request
     def add_cors(resp):
         origin = request.headers.get("Origin", "")
-        # Use specific origin instead of wildcard for better security
+        resp.headers["Vary"] = "Origin"
         if origin in ALLOWED_ORIGINS:
             resp.headers["Access-Control-Allow-Origin"] = origin
-        elif ALLOWED_ORIGINS:
-            # Default to first allowed origin for non-browser requests
-            resp.headers["Access-Control-Allow-Origin"] = ALLOWED_ORIGINS[0]
+            resp.headers["Access-Control-Allow-Credentials"] = "true"
+        # If origin is not in allowlist, do NOT set Allow-Credentials or echo the origin
         resp.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization,X-API-Key"
         resp.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS,DELETE,PATCH"
-        resp.headers["Access-Control-Allow-Credentials"] = "true"
         return resp
+
+    @app.route("/", defaults={"path": ""}, methods=["OPTIONS"])
+    @app.route("/<path:path>", methods=["OPTIONS"])
+    def handle_preflight(path):
+        """Handle CORS preflight OPTIONS requests."""
+        resp = app.make_default_options_response()
+        return add_cors(resp)
 
     @app.route("/health")
     def health() -> FlaskResponse:
@@ -193,10 +211,11 @@ def create_app(
         """List installed plugins (unauthenticated)."""
         plugins = registry.get_plugin_info()
         errors = registry.load_errors
+        if errors:
+            logger.warning("Plugin load errors (not sent to client): %s", errors)
         return jsonify({
             "plugins": plugins,
             "count": len(plugins),
-            "errors": errors
         })
 
     @app.route("/graph")
@@ -406,6 +425,11 @@ def create_app(
     @require_auth(allow_read=True)
     def get_profile(name: str) -> FlaskResponse:
         """Get a specific profile's data."""
+        if not validate_profile_name(name):
+            return jsonify({
+                "error": "Invalid profile name",
+                "message": "Profile name must be 1-100 characters, alphanumeric with _ - . allowed"
+            }), 400
         # Get nodes for this profile
         nodes_cypher = """
         MATCH (n:Resource {profile: $name})
@@ -584,12 +608,18 @@ def create_app(
                 "mode": mode
             })
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            logger.exception("save_profile failed")
+            return jsonify({"error": "Internal error", "code": "save_profile_failed"}), 500
 
     @app.route("/profiles/<name>", methods=["DELETE"])
     @require_auth
     def delete_profile(name: str) -> FlaskResponse:
         """Delete a profile and all its data."""
+        if not validate_profile_name(name):
+            return jsonify({
+                "error": "Invalid profile name",
+                "message": "Profile name must be 1-100 characters, alphanumeric with _ - . allowed"
+            }), 400
         with driver.session() as session:
             # Check if profile exists
             exists = session.run(
@@ -690,6 +720,11 @@ def create_app(
         if not access_key or not secret_key:
             return jsonify({"error": "access_key and secret_key are required"}), 400
 
+        # Validate region format before passing further
+        _AWS_REGION_PATTERN = re.compile(r'^[a-z]{2,}-[a-z]+-\d+$')
+        if region is not None and not _AWS_REGION_PATTERN.match(region):
+            return jsonify({"error": "invalid region format"}), 400
+
         # Default services if not specified
         if not services:
             services = [
@@ -706,7 +741,7 @@ def create_app(
                 region=region
             )
         except ValueError as e:
-            return jsonify({"error": str(e)}), 400
+            return jsonify({"error": str(e)[:200]}), 400
 
         # Create job
         job_manager = get_job_manager()
@@ -816,6 +851,11 @@ def create_app(
                             # Skip directories and hidden files
                             if zip_name.endswith('/') or zip_name.startswith('__'):
                                 continue
+                            # Reject path traversal attempts
+                            normalized = posixpath.normpath(zip_name)
+                            if normalized.startswith('..') or '/../' in normalized or normalized.startswith('/'):
+                                logger.warning(f"Rejected ZIP entry with traversal path: {zip_name!r}")
+                                continue
                             if zip_name.lower().endswith('.jsonl'):
                                 files_data[zip_name] = zf.read(zip_name)
                 except zipfile.BadZipFile:
@@ -880,6 +920,14 @@ def create_app(
             "jobs": [j.to_dict() for j in jobs],
             "count": len(jobs)
         })
+
+    # Initialize rate limiting after all routes are registered (C-06)
+    if not HAS_LIMITER:
+        logger.warning(
+            "Rate limiting not available — install flask-limiter[redis] via the [prod] extra. "
+            "API endpoints are currently unrestricted."
+        )
+    init_rate_limiting(app)
 
     return app
 
@@ -987,11 +1035,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="ArgusCloud API Server")
     parser.add_argument("--uri", default=os.environ.get("NEO4J_URI", "bolt://localhost:7687"))
     parser.add_argument("--user", default=os.environ.get("NEO4J_USER", "neo4j"))
-    parser.add_argument("--password", default=os.environ.get("NEO4J_PASSWORD", "letmein123"))
+    parser.add_argument("--password", default=os.environ.get("NEO4J_PASSWORD", None))
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=5000)
     parser.add_argument("--no-auth", action="store_true", help="Disable authentication")
     args = parser.parse_args()
+
+    if not args.password:
+        print("ERROR: NEO4J_PASSWORD must be set (via --password or NEO4J_PASSWORD env var)", flush=True)
+        raise SystemExit(1)
 
     auth_config = None
     if args.no_auth:

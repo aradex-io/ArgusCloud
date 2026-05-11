@@ -32,6 +32,12 @@ class Node:
     provider: CloudProvider = CloudProvider.AWS
     tags: Dict[str, str] = field(default_factory=dict)
 
+    def __post_init__(self):
+        if not isinstance(self.id, str) or not self.id.strip():
+            raise ValueError(f"Node.id must be a non-empty string, got {self.id!r}")
+        if not isinstance(self.type, str) or not self.type.strip():
+            raise ValueError(f"Node.type must be a non-empty string, got {self.type!r}")
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert node to dictionary for serialization."""
         d = asdict(self)
@@ -61,6 +67,14 @@ class Edge:
     type: str
     properties: Dict[str, Any] = field(default_factory=dict)
     provider: CloudProvider = CloudProvider.AWS
+
+    def __post_init__(self):
+        if not isinstance(self.src, str) or not self.src.strip():
+            raise ValueError(f"Edge.src must be a non-empty string, got {self.src!r}")
+        if not isinstance(self.dst, str) or not self.dst.strip():
+            raise ValueError(f"Edge.dst must be a non-empty string, got {self.dst!r}")
+        if not isinstance(self.type, str) or not self.type.strip():
+            raise ValueError(f"Edge.type must be a non-empty string, got {self.type!r}")
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert edge to dictionary for serialization."""

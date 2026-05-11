@@ -3,7 +3,7 @@
 # ArgusCloud Startup Script
 # Usage: ./start.sh [dev|prod]
 #
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -21,8 +21,8 @@ ENV_EXAMPLE="${SCRIPT_DIR}/.env.example"
 
 # Default values for development
 DEFAULT_NEO4J_USER="neo4j"
-DEFAULT_NEO4J_PASSWORD="letmein123"
-DEFAULT_AUTH_ENABLED="false"
+DEFAULT_NEO4J_PASSWORD=""  # No default — must be set explicitly
+DEFAULT_AUTH_ENABLED="true"
 DEFAULT_JWT_SECRET="dev-secret-change-in-production"
 DEFAULT_CORS_ORIGINS="http://localhost:8080,http://127.0.0.1:8080,http://localhost:3000"
 DEFAULT_LOG_LEVEL="DEBUG"
@@ -129,16 +129,17 @@ setup_env_file() {
         source "$ENV_FILE"
         local errors=0
 
-        if [ "$NEO4J_PASSWORD" == "letmein123" ] || [ -z "$NEO4J_PASSWORD" ]; then
+        if [ "${NEO4J_PASSWORD:-}" == "letmein123" ] || [ -z "${NEO4J_PASSWORD:-}" ]; then
             print_error "NEO4J_PASSWORD must be changed from default"
             errors=1
         fi
 
-        if [ "$AUTH_ENABLED" != "true" ]; then
+        if [ "${AUTH_ENABLED:-}" != "true" ]; then
             print_warning "AUTH_ENABLED should be 'true' in production"
         fi
 
-        if [ ${#JWT_SECRET} -lt 32 ]; then
+        _jwt_secret="${JWT_SECRET:-}"
+        if [ ${#_jwt_secret} -lt 32 ]; then
             print_error "JWT_SECRET must be at least 32 characters"
             echo "  Generate with: openssl rand -base64 32"
             errors=1
@@ -279,7 +280,7 @@ show_access_info() {
 
     if [ "$mode" == "dev" ]; then
         echo -e "  ${BOLD}Neo4j Browser:${NC}      ${GREEN}http://localhost:7474${NC}"
-        echo -e "  ${BOLD}Neo4j Credentials:${NC}  ${NEO4J_USER:-neo4j} / ${NEO4J_PASSWORD:-letmein123}"
+        echo -e "  ${BOLD}Neo4j Credentials:${NC}  ${NEO4J_USER:-neo4j} / (set via NEO4J_PASSWORD)"
     fi
 }
 

@@ -23,6 +23,8 @@ from flask import request, jsonify, g, current_app
 DEFAULT_API_KEY_LENGTH = 32
 DEFAULT_JWT_EXPIRY = 3600  # 1 hour
 JWT_ALGORITHM = "HS256"
+JWT_ISSUER = "arguscloud"
+JWT_AUDIENCE = "arguscloud-api"
 
 
 def generate_api_key(prefix: str = "ch") -> Tuple[str, str]:
@@ -65,6 +67,8 @@ def create_jwt_token(
     now = datetime.now(timezone.utc)
     token_payload["exp"] = now + timedelta(seconds=expiry_seconds)
     token_payload["iat"] = now
+    token_payload["iss"] = JWT_ISSUER
+    token_payload["aud"] = JWT_AUDIENCE
 
     return jwt.encode(token_payload, secret, algorithm=JWT_ALGORITHM)
 
@@ -85,7 +89,9 @@ def verify_jwt_token(token: str, secret: str) -> Optional[Dict[str, Any]]:
             token,
             secret,
             algorithms=[JWT_ALGORITHM],
-            options={"require": ["exp", "iat"]}
+            audience=JWT_AUDIENCE,
+            issuer=JWT_ISSUER,
+            options={"require": ["exp", "iat", "iss", "aud"]}
         )
         return payload
     except jwt.ExpiredSignatureError:
@@ -104,12 +110,14 @@ class AuthConfig:
         enabled: bool = True,
         api_keys: Optional[Dict[str, str]] = None,  # name -> hashed_key
         jwt_secret: Optional[str] = None,
+        jwt_expiry: int = DEFAULT_JWT_EXPIRY,
         allow_anonymous_health: bool = True,
         allow_anonymous_read: bool = False,
     ):
         self.enabled = enabled
         self.api_keys = api_keys or {}
         self.jwt_secret = jwt_secret or os.environ.get("ARGUSCLOUD_JWT_SECRET", secrets.token_hex(32))
+        self.jwt_expiry = jwt_expiry
         self.allow_anonymous_health = allow_anonymous_health
         self.allow_anonymous_read = allow_anonymous_read
 
@@ -241,10 +249,11 @@ def init_auth(app, config: Optional[AuthConfig] = None):
             "type": user.get("type"),
         }
 
-        token = create_jwt_token(payload, app.auth_config.jwt_secret)
+        expiry = app.auth_config.jwt_expiry
+        token = create_jwt_token(payload, app.auth_config.jwt_secret, expiry_seconds=expiry)
         return jsonify({
             "token": token,
-            "expires_in": DEFAULT_JWT_EXPIRY,
+            "expires_in": expiry,
             "token_type": "Bearer"
         })
 

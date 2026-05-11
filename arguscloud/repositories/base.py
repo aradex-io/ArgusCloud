@@ -11,6 +11,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from arguscloud.constants import MAX_QUERY_LIMIT
+
 
 @dataclass
 class NodeFilter:
@@ -27,6 +29,11 @@ class NodeFilter:
     node_type: Optional[str] = None
     limit: int = 500
     profile: Optional[str] = None
+
+    def __post_init__(self):
+        if not isinstance(self.limit, int) or self.limit < 1:
+            raise ValueError(f"NodeFilter.limit must be a positive int, got {self.limit!r}")
+        self.limit = min(self.limit, MAX_QUERY_LIMIT)
 
 
 @dataclass

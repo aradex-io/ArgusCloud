@@ -108,13 +108,16 @@ class UploadManager:
 
 # Global upload manager
 _upload_manager: Optional[UploadManager] = None
+_upload_manager_lock = threading.Lock()
 
 
 def get_upload_manager() -> UploadManager:
-    """Get the global upload manager instance."""
+    """Get the global upload manager instance (thread-safe double-checked locking)."""
     global _upload_manager
     if _upload_manager is None:
-        _upload_manager = UploadManager()
+        with _upload_manager_lock:
+            if _upload_manager is None:
+                _upload_manager = UploadManager()
     return _upload_manager
 
 

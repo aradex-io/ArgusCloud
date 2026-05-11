@@ -152,6 +152,44 @@ def rule_rds_unencrypted_snapshot(ctx: RuleContext) -> RuleResult:
 
 
 @rules.rule(
+    rule_id="aws-rds-publicly-accessible",
+    provider="aws",
+    description="RDS instance is publicly accessible (CIS AWS Foundations 2.3.3)",
+    severity="high",
+    tags=["rds", "networking", "compliance"],
+)
+def rule_rds_publicly_accessible(ctx: RuleContext) -> RuleResult:
+    """Detect RDS instances with PubliclyAccessible set to True.
+
+    CIS AWS Foundations 2.3.3: Ensure that public access is not given to
+    RDS Instances. Publicly accessible RDS instances are directly reachable
+    from the internet and are a credential-bruteforce surface.
+    """
+    findings: List[AttackPath] = []
+
+    for node in ctx.nodes:
+        if node.type != "RDSInstance":
+            continue
+
+        if node.properties.get("publicly_accessible") is True:
+            findings.append(AttackPath(
+                src=node.id,
+                dst="internet",
+                rule_id="aws-rds-publicly-accessible",
+                severity=Severity.HIGH,
+                description=f"RDS instance {node.properties.get('name', node.id)} is publicly accessible",
+                remediation="Set DBInstance.PubliclyAccessible to false; restrict access to private subnets or VPC peering.",
+            ))
+
+    return RuleResult(
+        rule_id="aws-rds-publicly-accessible",
+        description="RDS instance publicly accessible",
+        attack_paths=findings,
+        passed=len(findings) == 0,
+    )
+
+
+@rules.rule(
     rule_id="aws-secrets-no-rotation",
     provider="aws",
     description="Secrets Manager secret does not have rotation enabled",

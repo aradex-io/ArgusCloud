@@ -4,22 +4,30 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.3.x   | :white_check_mark: |
-| 0.2.x   | :white_check_mark: |
+| 0.5.x   | :white_check_mark: |
+| 0.3.x   | :x:                |
+| 0.2.x   | :x:                |
 | < 0.2   | :x:                |
 
 ## Reporting a Vulnerability
 
-**Please open a GitHub issue for security vulnerabilities.**
+**Please do NOT open a public GitHub issue for security vulnerabilities.**
 
-### How to Report
+Report vulnerabilities privately using **GitHub Security Advisories**:
 
+1. Go to the "Security" tab of the repository.
+2. Click **"Report a vulnerability"** to open a private advisory.
+3. Alternatively, navigate directly to:
+   <https://github.com/jeremylaratro/arguscloud/security/advisories/new>
 
-**Include:**
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if any)
+This ensures coordinated disclosure and prevents public exposure before a fix is available.
+
+### What to Include
+
+- Description of the vulnerability
+- Steps to reproduce
+- Potential impact
+- Suggested fix (if any)
 
 ### Response Timeline
 

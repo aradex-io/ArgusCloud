@@ -12,11 +12,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
+import os
 import sys
 from pathlib import Path
 from typing import List, Optional
 
 from arguscloud.core.graph import CloudProvider
+
+logger = logging.getLogger(__name__)
 
 
 # Default services to collect for each provider
@@ -178,8 +182,8 @@ Examples:
     )
     serve_parser.add_argument(
         "--neo4j-password",
-        default="letmein123",
-        help="Neo4j password"
+        default=None,
+        help="Neo4j password (required; also settable via NEO4J_PASSWORD env var)"
     )
     serve_parser.add_argument(
         "--no-auth",
@@ -206,8 +210,8 @@ Examples:
     )
     import_parser.add_argument(
         "--neo4j-password",
-        default="letmein123",
-        help="Neo4j password"
+        default=None,
+        help="Neo4j password (required; also settable via NEO4J_PASSWORD env var)"
     )
     import_parser.add_argument(
         "--clear",
@@ -325,9 +329,11 @@ def cmd_normalize(args: argparse.Namespace) -> int:
 
 def cmd_analyze(args: argparse.Namespace) -> int:
     """Execute the analyze command."""
-    from awshound import rules
+    from awshound import rules as legacy_rules
     from awshound.bundle import write_jsonl
     from arguscloud.core.graph import Node, Edge
+    from arguscloud.core.base import RuleContext
+    from arguscloud.rules import evaluate_all_rules
 
     input_dir = Path(args.input)
 
@@ -347,16 +353,46 @@ def cmd_analyze(args: argparse.Namespace) -> int:
     with edges_path.open("r", encoding="utf-8") as f:
         edges = [Edge.from_dict(json.loads(line)) for line in f]
 
-    # Run rules
-    attack_edges = rules.evaluate_rules(nodes, edges)
+    # Run both engines and union results, deduplicating on (rule_id, src, dst)
+    # Prefer higher severity when both engines emit the same finding
+    severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 
-    # Filter by severity if specified
+    ctx = RuleContext(nodes=nodes, edges=edges)
+    new_findings = evaluate_all_rules(ctx)
+    legacy_findings = legacy_rules.evaluate_rules(nodes, edges)
+
+    # Deduplicate: key = (rule_id, src, dst); prefer higher severity
+    deduped_map: dict = {}
+    for e in legacy_findings:
+        rule_id = e.properties.get("rule", "")
+        key = (rule_id, e.src, e.dst)
+        deduped_map[key] = e
+    for e in new_findings:
+        rule_id = e.properties.get("rule", "")
+        key = (rule_id, e.src, e.dst)
+        existing = deduped_map.get(key)
+        if existing is None:
+            deduped_map[key] = e
+        else:
+            # Prefer higher severity (lower numeric value)
+            existing_sev = severity_order.get(existing.properties.get("severity", "medium"), 2)
+            new_sev = severity_order.get(e.properties.get("severity", "medium"), 2)
+            if new_sev < existing_sev:
+                deduped_map[key] = e
+
+    attack_edges = list(deduped_map.values())
+    logger.info(
+        f"Analysis: {len(new_findings)} from arguscloud.rules, "
+        f"{len(legacy_findings)} from awshound, "
+        f"{len(attack_edges)} after dedup"
+    )
+
+    # Filter by severity if specified (severity_order already defined above)
     if args.severity:
-        severity_order = {"critical": 0, "high": 1, "medium": 2, "low": 3}
-        min_level = severity_order.get(args.severity, 3)
+        min_level = severity_order.get(args.severity.lower(), 3)
         attack_edges = [
             e for e in attack_edges
-            if severity_order.get(e.properties.get("severity", "medium"), 2) <= min_level
+            if severity_order.get(e.properties.get("severity", "medium"), 4) <= min_level
         ]
 
     # Write attack paths
@@ -444,6 +480,11 @@ def cmd_serve(args: argparse.Namespace) -> int:
     from arguscloud.api import create_app
     from arguscloud.api.auth import AuthConfig
 
+    password = args.neo4j_password or os.environ.get("NEO4J_PASSWORD")
+    if not password:
+        print("ERROR: Neo4j password is required. Use --neo4j-password or set NEO4J_PASSWORD.")
+        return 1
+
     auth_config = None
     if args.no_auth:
         auth_config = AuthConfig(enabled=False)
@@ -451,7 +492,7 @@ def cmd_serve(args: argparse.Namespace) -> int:
     app = create_app(
         args.neo4j_uri,
         args.neo4j_user,
-        args.neo4j_password,
+        password,
         auth_config
     )
 
@@ -477,6 +518,11 @@ def cmd_import(args: argparse.Namespace) -> int:
     """Execute the import command."""
     from neo4j import GraphDatabase
 
+    password = args.neo4j_password or os.environ.get("NEO4J_PASSWORD")
+    if not password:
+        print("ERROR: Neo4j password is required. Use --neo4j-password or set NEO4J_PASSWORD.")
+        return 1
+
     input_dir = Path(args.input)
 
     print(f"Importing data from {input_dir} to Neo4j...")
@@ -492,7 +538,7 @@ def cmd_import(args: argparse.Namespace) -> int:
 
     driver = GraphDatabase.driver(
         args.neo4j_uri,
-        auth=(args.neo4j_user, args.neo4j_password)
+        auth=(args.neo4j_user, password)
     )
 
     node_count = 0

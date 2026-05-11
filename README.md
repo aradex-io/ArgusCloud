@@ -54,8 +54,8 @@ pip install -e .
 
 # Or install with optional dependencies
 pip install -e ".[dev]"      # Development tools
-pip install -e ".[gcp]"      # GCP support (coming soon)
-pip install -e ".[azure]"    # Azure support (coming soon)
+pip install -e ".[gcp]"      # GCP support (NOTE: placeholder only — collection not yet implemented)
+pip install -e ".[azure]"    # Azure support (NOTE: placeholder only — collection not yet implemented)
 
 # (Optional) Start Neo4j
 docker run -d --name neo4j \

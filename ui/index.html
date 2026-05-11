@@ -3,7 +3,6 @@
   ArgusCloud UI - Cloud Security Graph Visualization
 
   This is the modular version that loads CSS and JS from external files.
-  See index.original.html for the single-file version.
 
   PLANNED FEATURES (TODO):
 
@@ -44,8 +43,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
-  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+  <!-- TODO: add integrity="sha384-..." — compute with: openssl dgst -sha384 -binary cytoscape.min.js | openssl base64 -A -->
+  <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js" crossorigin="anonymous"></script>
+  <!-- TODO: add integrity="sha384-..." — compute with: openssl dgst -sha384 -binary jszip.min.js | openssl base64 -A -->
+  <script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js" crossorigin="anonymous"></script>
   <!-- External CSS -->
   <link rel="stylesheet" href="css/main.css">
 </head>

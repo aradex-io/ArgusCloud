@@ -510,11 +510,14 @@ class TestCORSSecurity:
     """Tests for CORS security."""
 
     def test_cors_headers_set(self, test_client):
-        """Test that CORS headers are properly set."""
-        response = test_client.get("/health")
+        """Test that CORS headers are properly set for allowed origins."""
+        # Must send an Origin header — the security-correct implementation only
+        # echoes Access-Control-Allow-Origin for known origins (no wildcard).
+        response = test_client.get("/health", headers={"Origin": "http://localhost:8080"})
 
-        # Should have CORS headers
+        # Should have CORS headers for an allowed origin
         assert "Access-Control-Allow-Origin" in response.headers
+        assert response.headers["Access-Control-Allow-Origin"] == "http://localhost:8080"
 
     def test_cors_not_wildcard_with_credentials(self, test_client):
         """Test that CORS doesn't use wildcard with credentials."""
