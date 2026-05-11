@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -181,12 +182,16 @@ class HTMLExporter:
             {"critical": 0, "high": 1, "medium": 2, "low": 3}.get(e.properties.get("severity", "medium"), 4)
         )):
             sev = edge.properties.get("severity", "medium")
+            rule = html.escape(edge.properties.get("rule", "unknown"))
+            sev_esc = html.escape(sev)
+            description = html.escape(edge.properties.get("description", ""))
+            src = html.escape(self._truncate(edge.src, 40))
             rows.append(f'''
                 <tr>
-                    <td><code>{edge.properties.get("rule", "unknown")}</code></td>
-                    <td><span class="severity {sev}">{sev}</span></td>
-                    <td>{edge.properties.get("description", "")}</td>
-                    <td><code>{self._truncate(edge.src, 40)}</code></td>
+                    <td><code>{rule}</code></td>
+                    <td><span class="severity {sev_esc}">{sev_esc}</span></td>
+                    <td>{description}</td>
+                    <td><code>{src}</code></td>
                 </tr>
             ''')
 
@@ -213,10 +218,11 @@ class HTMLExporter:
 
         items = []
         for rtype, count in sorted(counts.items(), key=lambda x: -x[1]):
+            rtype_esc = html.escape(rtype)
             items.append(f'''
                 <div class="resource-item">
                     <div class="resource-count">{count}</div>
-                    <div class="resource-type">{rtype}</div>
+                    <div class="resource-type">{rtype_esc}</div>
                 </div>
             ''')
 

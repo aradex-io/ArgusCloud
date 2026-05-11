@@ -23,11 +23,24 @@
       mitreTactics: []
     };
 
-    let savedFilters = JSON.parse(localStorage.getItem('arguscloud_saved_filters') || '[]');
+    let savedFilters = [];
+    try {
+      const _sfRaw = localStorage.getItem('arguscloud_saved_filters');
+      const _sfParsed = _sfRaw ? JSON.parse(_sfRaw) : [];
+      if (Array.isArray(_sfParsed)) savedFilters = _sfParsed;
+    } catch (e) {
+      console.warn('Could not parse saved filters', e);
+    }
     let availableTypes = [];
     let availableRegions = [];
     let availableEdgeTypes = [];
     let availableAttackRules = [];
+
+    // Utility: debounce — prevent rapid repeated calls
+    function debounce(fn, ms) {
+      let t;
+      return function(...args) { clearTimeout(t); t = setTimeout(() => fn.apply(this, args), ms); };
+    }
 
     // AWS Resource Categories mapping
     const resourceCategories = {
@@ -334,7 +347,7 @@
       updateActiveFiltersBar();
 
       // Apply the filters
-      applyFilters();
+      applyFilters(nodes, edges);
     }
 
     // Initialize query category dropdown
@@ -1628,11 +1641,11 @@
         updateActiveFiltersBar();
       });
 
-      // Search input
-      document.getElementById('searchInput').addEventListener('input', (e) => {
+      // Search input (debounced 300ms to avoid rebuilding on every keystroke)
+      document.getElementById('searchInput').addEventListener('input', debounce((e) => {
         filterState.searchText = e.target.value;
         updateActiveFiltersBar();
-      });
+      }, 300));
 
       // Multi-select dropdowns
       initMultiSelect('type', 'resourceTypes');
@@ -1740,9 +1753,9 @@
       if (!optionsContainer) return;
 
       optionsContainer.innerHTML = options.map(opt => `
-        <div class="multi-select-option ${filterState[stateKey].includes(opt) ? 'selected' : ''}" data-value="${opt}">
+        <div class="multi-select-option ${filterState[stateKey].includes(opt) ? 'selected' : ''}" data-value="${escapeHtml(opt ?? '')}">
           <input type="checkbox" ${filterState[stateKey].includes(opt) ? 'checked' : ''}>
-          <span>${opt}</span>
+          <span>${escapeHtml(opt ?? '')}</span>
         </div>
       `).join('');
 
@@ -2127,8 +2140,8 @@
       }
 
       container.innerHTML = savedFilters.map(f => `
-        <div class="saved-filter-item" data-filter-id="${f.id}">
-          <span>${f.name}</span>
+        <div class="saved-filter-item" data-filter-id="${escapeHtml(f.id ?? '')}">
+          <span>${escapeHtml(f.name ?? '')}</span>
           <div class="saved-filter-actions">
             <button class="btn btn-sm btn-ghost delete-filter" data-id="${f.id}" title="Delete">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2544,7 +2557,7 @@
         const isRequired = name === 'nodes.jsonl' || name === 'edges.jsonl';
         const icon = isRequired ? '✓' : '○';
         const color = isRequired ? 'var(--accent-success)' : 'var(--text-tertiary)';
-        html += `<div style="padding: 2px 0;"><span style="color: ${color}; margin-right: 6px;">${icon}</span>${name}</div>`;
+        html += `<div style="padding: 2px 0;"><span style="color: ${color}; margin-right: 6px;">${icon}</span>${escapeHtml(name ?? '')}</div>`;
       }
 
       if (!hasNodes || !hasEdges) {
@@ -2853,18 +2866,24 @@
       cy.on('tap', 'node, edge', evt => {
         const data = evt.target.data();
         const isNode = evt.target.isNode();
-        const html = `
+        const detailEl = document.getElementById('detailContent');
+        detailEl.innerHTML = `
           <div style="font-size: 12px;">
             <div style="font-weight: 600; margin-bottom: 8px; color: var(--accent-primary);">
-              ${isNode ? 'Node' : 'Edge'}: ${data.type || data.edgeType || 'Unknown'}
+              ${isNode ? 'Node' : 'Edge'}: ${escapeHtml((data.type || data.edgeType || 'Unknown') ?? '')}
             </div>
             <div style="margin-bottom: 8px;">
-              <code style="word-break: break-all;">${data.id || ''}</code>
+              <code style="word-break: break-all;">${escapeHtml((data.id || '') ?? '')}</code>
             </div>
-            <pre style="margin: 0; max-height: 300px; overflow: auto;">${JSON.stringify(data.properties || data, null, 2)}</pre>
+            <span id="_detailPrePlaceholder"></span>
           </div>
         `;
-        document.getElementById('detailContent').innerHTML = html;
+        // L-15: use textContent for JSON so property values can't escape the <pre>
+        const _detailPre = document.createElement('pre');
+        _detailPre.style.cssText = 'margin: 0; max-height: 300px; overflow: auto;';
+        _detailPre.textContent = JSON.stringify(data.properties || data, null, 2);
+        const _placeholder = detailEl.querySelector('#_detailPrePlaceholder');
+        if (_placeholder) _placeholder.replaceWith(_detailPre);
       });
 
       cy.on('tap', evt => {
@@ -3512,13 +3531,24 @@
       contentEl.innerHTML = paths.slice(0, 10).map((path, i) => {
         const startNode = path[0] || '';
         const endNode = path[path.length - 1] || '';
+        // H-01: escape API-sourced node IDs before inserting into innerHTML
+        const startLabel = escapeHtml(truncate(startNode.split('/').pop() || startNode, 20) ?? '');
+        const endLabel = escapeHtml(truncate(endNode.split('/').pop() || endNode, 20) ?? '');
         return `
-          <div class="path-result-item" onclick="highlightPathByIndex(${i})">
+          <div class="path-result-item" data-path-index="${i}">
             <span class="path-length">${path.length - 1} hop${path.length - 1 !== 1 ? 's' : ''}</span>
-            <span class="path-endpoints">${truncate(startNode.split('/').pop() || startNode, 20)} → ${truncate(endNode.split('/').pop() || endNode, 20)}</span>
+            <span class="path-endpoints">${startLabel} → ${endLabel}</span>
           </div>
         `;
       }).join('') + (paths.length > 10 ? `<div style="font-size: 11px; color: var(--text-tertiary); padding: 8px;">...and ${paths.length - 10} more</div>` : '');
+
+      // Delegated click — replaces inline onclick (H-01)
+      contentEl.addEventListener('click', (evt) => {
+        const item = evt.target.closest('.path-result-item');
+        if (!item) return;
+        const idx = parseInt(item.dataset.pathIndex, 10);
+        if (!isNaN(idx)) highlightPathByIndex(idx);
+      });
     }
 
     // Highlight a specific path by index
@@ -3543,11 +3573,11 @@
         type: n.data('type') || ''
       })).sort((a, b) => a.label.localeCompare(b.label));
 
-      // Group nodes by type for better organization
+      // Group nodes by type for better organization (H-01: escape API-sourced values)
       const optionsHtml = nodes.map(n => {
-        const displayLabel = truncate(n.label, 40);
-        const typeLabel = n.type ? ` [${n.type}]` : '';
-        return `<option value="${n.id}">${displayLabel}${typeLabel}</option>`;
+        const displayLabel = escapeHtml(truncate(n.label, 40) ?? '');
+        const typeLabel = n.type ? ` [${escapeHtml(n.type ?? '')}]` : '';
+        return `<option value="${escapeHtml(n.id ?? '')}">${displayLabel}${typeLabel}</option>`;
       }).join('');
 
       // Add special options at top
@@ -3703,22 +3733,23 @@
       }
 
       // Build rows with expandable detail rows
+      // H-01: use escapeHtml on all server-sourced values; use data-attrs instead of inline onclick
       const rows = filtered.map((e, idx) => {
         const sev = (e.properties?.severity || 'info').toLowerCase();
         const rule = e.properties?.rule || 'unknown';
         const rowId = `attack-row-${idx}`;
         const detailId = `attack-detail-${idx}`;
 
-        // Main row with expand button
+        // Main row with expand button — onclick replaced by delegated listener below
         const mainRow = `
-          <tr class="attack-row" id="${rowId}" data-rule="${rule}" data-detail-id="${detailId}" onclick="toggleAttackDetail('${rowId}', '${detailId}', '${rule}')">
-            <td><code>${rule}</code></td>
-            <td>${e.properties?.description || ''}</td>
-            <td><span class="severity ${sev}">${sev}</span></td>
+          <tr class="attack-row" id="${rowId}" data-rowid="${escapeHtml(rowId)}" data-detailid="${escapeHtml(detailId)}" data-rule="${escapeHtml(rule ?? '')}">
+            <td><code>${escapeHtml(rule ?? '')}</code></td>
+            <td>${escapeHtml((e.properties?.description || '') ?? '')}</td>
+            <td><span class="severity ${escapeHtml(sev)}">${escapeHtml(sev)}</span></td>
             <td>
-              <code style="font-size: 11px;">${truncate(e.src, 30)}</code>
+              <code style="font-size: 11px;">${escapeHtml(truncate(e.src, 30) ?? '')}</code>
               <span class="arrow">→</span>
-              <code style="font-size: 11px;">${truncate(e.dst, 30)}</code>
+              <code style="font-size: 11px;">${escapeHtml(truncate(e.dst, 30) ?? '')}</code>
             </td>
             <td class="expand-cell">
               <button class="expand-btn" title="Expand details">▼</button>
@@ -3728,7 +3759,7 @@
 
         // Hidden detail row (populated on expand)
         const detailRow = `
-          <tr class="attack-detail hidden" id="${detailId}" data-rule="${rule}">
+          <tr class="attack-detail hidden" id="${detailId}" data-rule="${escapeHtml(rule ?? '')}">
             <td colspan="5">
               <div class="detail-panel">
                 <div class="detail-loading">Loading vulnerability details...</div>
@@ -3741,6 +3772,16 @@
       }).join('');
 
       tbody.innerHTML = rows;
+
+      // Delegated click handler — replaces inline onclick to prevent attribute injection
+      tbody.addEventListener('click', (evt) => {
+        const row = evt.target.closest('tr.attack-row');
+        if (!row) return;
+        const rowId = row.dataset.rowid;
+        const detailId = row.dataset.detailid;
+        const rule = row.dataset.rule;
+        if (rowId && detailId) toggleAttackDetail(rowId, detailId, rule);
+      });
     }
 
     // Toggle attack detail row visibility
@@ -3879,7 +3920,7 @@
       grid.innerHTML = keys.map(k => `
         <div class="stat-card">
           <div class="stat-value">${counts[k]}</div>
-          <div class="stat-label">${k}</div>
+          <div class="stat-label">${escapeHtml(k ?? '')}</div>
         </div>
       `).join('');
     }
@@ -3895,8 +3936,8 @@
 
       list.innerHTML = nodeData.slice(0, 100).map(n => `
         <li class="env-item">
-          <span class="env-type">${n.type}</span>
-          <span class="env-id">${n.id}</span>
+          <span class="env-type">${escapeHtml(n.type ?? '')}</span>
+          <span class="env-id">${escapeHtml(n.id ?? '')}</span>
         </li>
       `).join('');
     }
@@ -4228,7 +4269,7 @@
         // Show errors if any
         if (progress.errors?.length > 0) {
           document.getElementById('collectErrors').classList.remove('hidden');
-          document.getElementById('collectErrors').innerHTML = progress.errors.map(e => `<div>• ${e}</div>`).join('');
+          document.getElementById('collectErrors').innerHTML = progress.errors.map(e => `<div>• ${escapeHtml(e ?? '')}</div>`).join('');
         }
 
         // Handle completion
@@ -4283,9 +4324,11 @@
       document.getElementById('bulkUploadModal').classList.add('hidden');
     });
 
-    // Click outside to close
+    // Click outside to close — always clear poll interval (L-14)
     document.getElementById('bulkUploadModal').addEventListener('click', (e) => {
-      if (e.target.id === 'bulkUploadModal' && !uploadPollInterval) {
+      if (e.target.id === 'bulkUploadModal') {
+        clearInterval(uploadPollInterval);
+        uploadPollInterval = null;
         document.getElementById('bulkUploadModal').classList.add('hidden');
       }
     });
@@ -4371,7 +4414,7 @@
                 '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline>'
               }
             </svg>
-            ${f.name}
+            ${escapeHtml(f.name ?? '')}
           </span>
           <span style="color: var(--text-tertiary); font-size: 11px;">${formatFileSize(f.size)}</span>
         </div>
@@ -4467,7 +4510,7 @@
         if (progress.profiles_created && progress.profiles_created.length > 0) {
           document.getElementById('uploadProfilesCreated').classList.remove('hidden');
           document.getElementById('uploadProfilesList').innerHTML = progress.profiles_created.map(p =>
-            `<div style="padding: 2px 0;">${p}</div>`
+            `<div style="padding: 2px 0;">${escapeHtml(p ?? '')}</div>`
           ).join('');
         }
 
@@ -4475,7 +4518,7 @@
         if (progress.errors && progress.errors.length > 0) {
           document.getElementById('uploadErrors').classList.remove('hidden');
           document.getElementById('uploadErrors').innerHTML = progress.errors.map(e =>
-            `<div style="padding: 2px 0;">${e}</div>`
+            `<div style="padding: 2px 0;">${escapeHtml(e ?? '')}</div>`
           ).join('');
         }
 
@@ -4861,15 +4904,18 @@
       }
     });
 
-    // Layout change
+    // Layout change — persist selection (L-16)
     document.getElementById('layoutSelect').addEventListener('change', () => {
+      const val = document.getElementById('layoutSelect').value;
+      localStorage.setItem('arguscloud_setting_layout', val);
       if (cy) {
-        cy.layout({ name: document.getElementById('layoutSelect').value, animate: true }).run();
+        cy.layout({ name: val, animate: true }).run();
       }
     });
 
-    // Label position change
+    // Label position change — persist selection (L-16)
     document.getElementById('labelPos').addEventListener('change', () => {
+      localStorage.setItem('arguscloud_setting_labelPos', document.getElementById('labelPos').value);
       if (cy) {
         cy.style(getCyStyle());
       }
@@ -4971,8 +5017,33 @@
       });
     }
 
+    // Persist apiBase on change (L-16)
+    document.getElementById('apiBase').addEventListener('change', (e) => {
+      const val = e.target.value.trim();
+      if (val.startsWith('http')) {
+        localStorage.setItem('arguscloud_setting_apiBase', val);
+      }
+    });
+
+    // Known layout options for validation (L-16)
+    const KNOWN_LAYOUTS = ['cose', 'circle', 'concentric', 'grid', 'breadthfirst', 'random', 'preset'];
+
     // Initial status check and profile loading
     (async function init() {
+      // Restore persisted settings (L-16)
+      const savedApiBase = localStorage.getItem('arguscloud_setting_apiBase');
+      if (savedApiBase && savedApiBase.startsWith('http')) {
+        document.getElementById('apiBase').value = savedApiBase;
+      }
+      const savedLayout = localStorage.getItem('arguscloud_setting_layout');
+      if (savedLayout && KNOWN_LAYOUTS.includes(savedLayout)) {
+        document.getElementById('layoutSelect').value = savedLayout;
+      }
+      const savedLabelPos = localStorage.getItem('arguscloud_setting_labelPos');
+      if (savedLabelPos && ['center', 'top', 'bottom', 'left', 'right'].includes(savedLabelPos)) {
+        document.getElementById('labelPos').value = savedLabelPos;
+      }
+
       const base = document.getElementById('apiBase').value;
 
       // Check API status
