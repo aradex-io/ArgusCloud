@@ -3,7 +3,7 @@
 # ArgusCloud Startup Script
 # Usage: ./start.sh [dev|prod]
 #
-set -e
+set -euo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -129,16 +129,17 @@ setup_env_file() {
         source "$ENV_FILE"
         local errors=0
 
-        if [ "$NEO4J_PASSWORD" == "letmein123" ] || [ -z "$NEO4J_PASSWORD" ]; then
+        if [ "${NEO4J_PASSWORD:-}" == "letmein123" ] || [ -z "${NEO4J_PASSWORD:-}" ]; then
             print_error "NEO4J_PASSWORD must be changed from default"
             errors=1
         fi
 
-        if [ "$AUTH_ENABLED" != "true" ]; then
+        if [ "${AUTH_ENABLED:-}" != "true" ]; then
             print_warning "AUTH_ENABLED should be 'true' in production"
         fi
 
-        if [ ${#JWT_SECRET} -lt 32 ]; then
+        _jwt_secret="${JWT_SECRET:-}"
+        if [ ${#_jwt_secret} -lt 32 ]; then
             print_error "JWT_SECRET must be at least 32 characters"
             echo "  Generate with: openssl rand -base64 32"
             errors=1

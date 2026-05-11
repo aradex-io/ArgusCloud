@@ -56,12 +56,14 @@ prod = [
     "prometheus-client>=0.17.0",
     "gunicorn>=21.0.0",
 ]
+# NOTE: GCP/Azure collectors are placeholders — installing these extras does not enable working collection yet.
 gcp = [
     "google-cloud-resource-manager>=1.0.0",
     "google-cloud-iam>=2.0.0",
     "google-cloud-storage>=2.0.0",
     "google-cloud-compute>=1.0.0",
 ]
+# NOTE: GCP/Azure collectors are placeholders — installing these extras does not enable working collection yet.
 azure = [
     "azure-identity>=1.0.0",
     "azure-mgmt-resource>=23.0.0",
@@ -69,14 +71,14 @@ azure = [
     "azure-mgmt-storage>=21.0.0",
 ]
 all = [
-    "arguscloud[dev,gcp,azure]",
+    "arguscloud[dev,prod,gcp,azure]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/jeremylaratro/cloudhound"
-Documentation = "https://github.com/jeremylaratro/cloudhound#readme"
-Repository = "https://github.com/jeremylaratro/cloudhound.git"
-Issues = "https://github.com/jeremylaratro/cloudhound/issues"
+Homepage = "https://github.com/jeremylaratro/arguscloud"
+Documentation = "https://github.com/jeremylaratro/arguscloud#readme"
+Repository = "https://github.com/jeremylaratro/arguscloud.git"
+Issues = "https://github.com/jeremylaratro/arguscloud/issues"
 
 [project.scripts]
 arguscloud = "arguscloud.cli.main:main"
@@ -104,4 +106,4 @@ disallow_untyped_defs = true
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --cov=arguscloud --cov=awshound --cov-report=term-missing --cov-fail-under=40"

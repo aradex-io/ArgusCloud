@@ -32,9 +32,8 @@ RUN pip install --upgrade pip setuptools wheel && \
     pip install ".[prod]"
 
 # Copy application code
-COPY cloudhound/ ./cloudhound/
+COPY arguscloud/ ./arguscloud/
 COPY awshound/ ./awshound/
-COPY cloudhound.py ./
 
 # Install the application
 RUN pip install --no-deps .
@@ -47,9 +46,9 @@ FROM python:3.11-slim AS runtime
 # Labels for container metadata
 LABEL org.opencontainers.image.title="ArgusCloud API" \
       org.opencontainers.image.description="Cloud security graph analytics API server" \
-      org.opencontainers.image.version="0.3.0" \
+      org.opencontainers.image.version="0.5.0" \
       org.opencontainers.image.vendor="ArgusCloud" \
-      org.opencontainers.image.source="https://github.com/jeremylaratro/cloudhound"
+      org.opencontainers.image.source="https://github.com/jeremylaratro/arguscloud"
 
 # Runtime environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -79,9 +78,8 @@ RUN groupadd --gid 1000 arguscloud && \
 COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code (needed for some dynamic imports)
-COPY --chown=arguscloud:arguscloud cloudhound/ ./cloudhound/
+COPY --chown=arguscloud:arguscloud arguscloud/ ./arguscloud/
 COPY --chown=arguscloud:arguscloud awshound/ ./awshound/
-COPY --chown=arguscloud:arguscloud cloudhound.py ./
 
 # Create data directory for uploads/exports
 RUN mkdir -p /app/data && chown arguscloud:arguscloud /app/data
@@ -112,4 +110,4 @@ CMD ["gunicorn", \
      "--access-logfile", "-", \
      "--error-logfile", "-", \
      "--capture-output", \
-     "cloudhound.api.wsgi:application"]
+     "arguscloud.api.wsgi:application"]
